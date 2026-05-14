@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Home | HappyMeal{% endblock %}
+
+{% block content %}
+<section class="hero-section mb-5">
+    <div class="hero-content">
+        <p class="section-kicker text-white mb-3">Fresh from the kitchen</p>
+        <h1 class="display-5 fw-bold mb-3">HappyMeal Restaurant</h1>
+        <p class="lead mb-4">
+            Order fresh meals, explore our menu, and enjoy quick service from our restaurant ordering system.
+        </p>
+        <div class="d-flex flex-wrap gap-2 mb-4">
+            <a class="btn btn-primary" href="{% url 'menu_list' %}">View Menu</a>
+            <a class="btn btn-light" href="{% url 'category_list' %}">Browse Categories</a>
+        </div>
+        <div class="row g-3">
+            <div class="col-sm-4">
+                <div class="hero-stat">
+                    <div class="fw-bold">Fresh</div>
+                    <small>Prepared daily</small>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="hero-stat">
+                    <div class="fw-bold">Fast</div>
+                    <small>Simple ordering</small>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="hero-stat">
+                    <div class="fw-bold">Local</div>
+                    <small>Food people love</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section>
+    <div class="page-header d-flex flex-column flex-md-row justify-content-between align-items-md-end">
+        <div>
+            <p class="section-kicker mb-2">Why customers come back</p>
+            <h2 class="h1 mb-0">Good food, neatly organized.</h2>
+        </div>
+        <a class="btn btn-outline-secondary" href="{% url 'about' %}">About Us</a>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="feature-tile">
+                <span class="feature-icon">1</span>
+                <h3 class="h5">Fresh Meals</h3>
+                <p class="text-muted mb-0">Meals are prepared with care, clear pricing, and availability customers can see.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="feature-tile">
+                <span class="feature-icon">2</span>
+                <h3 class="h5">Clear Categories</h3>
+                <p class="text-muted mb-0">Dishes are grouped into simple restaurant categories for easy browsing.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="feature-tile">
+                <span class="feature-icon">3</span>
+                <h3 class="h5">Friendly Service</h3>
+                <p class="text-muted mb-0">From browsing the menu to placing an order, everything feels clear, quick, and easy.</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

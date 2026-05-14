@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Cart | HappyMeal{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex flex-column flex-md-row align-items-md-end justify-content-between">
+    <div>
+        <p class="section-kicker mb-2">Your order</p>
+        <h1 class="display-6 fw-bold mb-2">Cart</h1>
+        <p class="text-muted mb-0">Review your meal choices before placing an order.</p>
+    </div>
+    <a class="btn btn-outline-secondary" href="{% url 'menu_list' %}">Add More Food</a>
+</div>
+
+{% if cart_items %}
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="d-flex flex-column gap-3">
+                {% for cart_item in cart_items %}
+                    <article class="cart-line p-3">
+                        <div class="d-flex flex-column flex-md-row gap-3">
+                            <div>
+                                {% if cart_item.menu_item.image_url %}
+                                    <img class="cart-thumbnail" src="{{ cart_item.menu_item.image_url }}" alt="{{ cart_item.menu_item.name }}">
+                                {% else %}
+                                    <span class="cart-thumbnail-placeholder">{{ cart_item.menu_item.name|slice:":1" }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex flex-column flex-md-row justify-content-between gap-2">
+                                    <div>
+                                        <p class="section-kicker mb-1">{{ cart_item.menu_item.category.name }}</p>
+                                        <h2 class="h5 mb-1">{{ cart_item.menu_item.name }}</h2>
+                                        <p class="text-muted mb-2">NGN {{ cart_item.menu_item.price }} each</p>
+                                    </div>
+                                    <strong class="price-tag">NGN {{ cart_item.line_total }}</strong>
+                                </div>
+
+                                <div class="d-flex flex-column flex-sm-row align-items-sm-center gap-2 mt-2">
+                                    <form class="d-flex align-items-center gap-2" method="post" action="{% url 'cart_update' cart_item.menu_item.pk %}">
+                                        {% csrf_token %}
+                                        <label class="fw-semibold" for="quantity-{{ cart_item.menu_item.pk }}">Qty</label>
+                                        <input class="form-control quantity-input" id="quantity-{{ cart_item.menu_item.pk }}" name="quantity" type="number" min="1" max="20" value="{{ cart_item.quantity }}">
+                                        <button class="btn btn-sm btn-outline-secondary" type="submit">Update</button>
+                                    </form>
+                                    <form method="post" action="{% url 'cart_remove' cart_item.menu_item.pk %}">
+                                        {% csrf_token %}
+                                        <button class="btn btn-sm btn-link text-danger px-0" type="submit">Remove</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <aside class="content-panel p-4 sticky-lg-top" style="top: 6rem;">
+                <p class="section-kicker mb-2">Cart summary</p>
+                <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
+                    <span class="text-muted">Items</span>
+                    <strong>{{ cart_item_count }}</strong>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <span class="text-muted">Subtotal</span>
+                    <strong class="price-tag">NGN {{ subtotal }}</strong>
+                </div>
+                <a class="btn btn-cart w-100 mb-2" href="{% url 'menu_list' %}">Continue Ordering</a>
+                <p class="text-muted small mb-0">Checkout can be connected when the order form is ready.</p>
+            </aside>
+        </div>
+    </div>
+{% else %}
+    <div class="content-panel p-4 p-md-5 text-center">
+        <p class="section-kicker mb-2">Nothing here yet</p>
+        <h2 class="h3 mb-3">Your cart is empty.</h2>
+        <p class="text-muted mb-4">Choose a meal from the menu and add it here when you are ready to order.</p>
+        <a class="btn btn-cart" href="{% url 'menu_list' %}">Browse Menu</a>
+    </div>
+{% endif %}
+{% endblock %}

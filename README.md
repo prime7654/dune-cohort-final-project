@@ -1,386 +1,175 @@
 # HappyMeal Restaurant Ordering System
 
-HappyMeal Restaurant is a simple Django web project for managing a restaurant menu and customer orders. The project started with basic pages for the homepage, menu list, about page, and a custom 404 page. It now includes database models that allow the restaurant to store menu categories, menu items, customers, orders, and the individual items inside each order.
+HappyMeal is a Django restaurant ordering project that lets customers browse a styled food menu, view dish details, explore menu categories, and add available meals to a session-based cart.
 
-The project is built with Django and uses SQLite for local development.
+The project uses Django with SQLite for local development, Bootstrap CDN for layout support, and custom CSS for a warmer restaurant-style interface.
 
-## Project Description
+## Features
 
-HappyMeal Restaurant helps organize the main parts of a restaurant ordering workflow:
+- Polished restaurant homepage with a visual hero section
+- Styled navigation bar with Home, Menu, About, and Cart links
+- Database-backed menu list
+- Menu detail pages for individual food items
+- Category list with menu item counts
+- In Stock and Out of Stock badges using `is_available`
+- Session-based cart
+- Add to Cart buttons on menu cards
+- Quantity selector on food detail pages
+- Cart page with item summary, quantity update, remove button, and subtotal
+- Custom styled 404 page
+- Seeded restaurant categories and food items through migrations
+- Matching food image URLs for menu items
+- Django admin support for managing records
+- Automated tests for pages and cart behavior
 
-- Restaurant staff can create food categories such as rice, burgers, drinks, and desserts.
-- Restaurant staff can add menu items with prices and availability.
-- Customers can be recorded with contact and address details.
-- Orders can be created for customers.
-- Each order can contain one or more menu items with quantities and saved prices.
+## Tech Stack
+
+- Python
+- Django
+- SQLite
+- Django Templates
+- Bootstrap CDN
+- Custom inline CSS
+
+## Main Apps
+
+### `restaurants`
+
+Handles the public restaurant website:
+
+- Homepage
+- Menu list
+- Menu item detail pages
+- Category list
+- Cart pages and cart actions
+- Shared templates and styling
+- Seed menu data migrations
+
+### `orders`
+
+Stores order-related models:
+
+- Customers
+- Orders
+- Order items
+
+The cart currently works as a customer-facing ordering preview. A full checkout form can be connected later to create real `Order` and `OrderItem` records from the cart.
 
 ## Models
 
-### MenuCategory
+### `MenuCategory`
 
 Located in `restaurants/models.py`.
 
-This model groups menu items into categories.
+| Field | Description |
+| --- | --- |
+| `name` | Category name such as Rice, Drinks, Starters, or Grills |
+| `description` | Optional category description |
 
-| Field | Type | Description |
-| --- | --- | --- |
-| `name` | `CharField` | Category name, for example `Rice` or `Drinks`. Must be unique. |
-| `description` | `TextField` | Optional description of the category. |
-
-Extra behavior:
-
-- Categories are ordered by `name`.
-- The plural name in Django admin is shown as `menu categories`.
-
-### MenuItem
+### `MenuItem`
 
 Located in `restaurants/models.py`.
 
-This model represents a food or drink item that can be ordered.
+| Field | Description |
+| --- | --- |
+| `category` | Connects the item to a menu category |
+| `name` | Food or drink name |
+| `description` | Menu item description |
+| `price` | Item price |
+| `is_available` | Controls In Stock or Out of Stock display |
+| `image_url` | Image URL displayed on menu cards and detail pages |
+| `created_at` | Timestamp for when the item was created |
 
-| Field | Type | Description |
-| --- | --- | --- |
-| `category` | `ForeignKey` | Connects the item to a `MenuCategory`. |
-| `name` | `CharField` | Name of the menu item. |
-| `description` | `TextField` | Optional item description. |
-| `price` | `DecimalField` | Price of the menu item. |
-| `is_available` | `BooleanField` | Shows whether the item is currently available. |
-| `image_url` | `URLField` | Optional image URL for the item. |
-| `created_at` | `DateTimeField` | Automatically stores when the item was created. |
-
-Extra behavior:
-
-- Menu items are ordered by category name, then item name.
-- The same item name cannot be repeated inside the same category.
-
-### Customer
+### `Customer`
 
 Located in `orders/models.py`.
 
-This model stores customer information.
+Stores customer contact and address details.
 
-| Field | Type | Description |
-| --- | --- | --- |
-| `full_name` | `CharField` | Customer's full name. |
-| `phone_number` | `CharField` | Customer's phone number. |
-| `email` | `EmailField` | Optional customer email address. |
-| `address` | `TextField` | Optional customer address. |
-| `created_at` | `DateTimeField` | Automatically stores when the customer record was created. |
-
-Extra behavior:
-
-- Customers are ordered by `full_name`.
-
-### Order
+### `Order`
 
 Located in `orders/models.py`.
 
-This model represents a customer's full order.
+Stores a customer's order, status, delivery address, notes, timestamps, and total price calculation.
 
-| Field | Type | Description |
-| --- | --- | --- |
-| `customer` | `ForeignKey` | Connects the order to a `Customer`. |
-| `status` | `CharField` | Tracks the order state. |
-| `delivery_address` | `TextField` | Optional delivery address for the order. |
-| `notes` | `TextField` | Optional order notes. |
-| `created_at` | `DateTimeField` | Automatically stores when the order was created. |
-| `updated_at` | `DateTimeField` | Automatically updates whenever the order changes. |
-
-Available order statuses:
-
-- `pending`
-- `confirmed`
-- `preparing`
-- `ready`
-- `delivered`
-- `cancelled`
-
-Extra behavior:
-
-- Orders are ordered from newest to oldest.
-- The `total_price` property adds up all related order items.
-- The customer relationship uses `PROTECT`, so old orders are not accidentally broken if someone tries to delete a customer.
-
-### OrderItem
+### `OrderItem`
 
 Located in `orders/models.py`.
 
-This model represents one menu item inside an order.
+Stores one menu item inside an order, including quantity, saved unit price, and line total.
 
-| Field | Type | Description |
+## Seeded Menu Data
+
+The project includes seed data through Django migrations.
+
+Current seeded categories:
+
+- Starters
+- Main Meals
+- Grills
+- Drinks
+
+Current seeded menu items:
+
+- Pepper Soup
+- Spring Rolls
+- Fried Rice and Chicken
+- Pounded Yam and Egusi
+- Suya Platter
+- Grilled Fish
+- Chapman
+- Zobo Drink
+
+The menu also supports any additional items added through the Django admin or Django shell.
+
+## Pages And Routes
+
+| URL | View | Description |
 | --- | --- | --- |
-| `order` | `ForeignKey` | Connects the item to an `Order`. |
-| `menu_item` | `ForeignKey` | Connects the order item to a `MenuItem`. |
-| `quantity` | `PositiveIntegerField` | Number of this menu item ordered. |
-| `unit_price` | `DecimalField` | Price of the menu item at the time of ordering. |
-
-Extra behavior:
-
-- The `line_total` property multiplies `quantity` by `unit_price`.
-- If `unit_price` is empty when saving, it is automatically copied from the selected menu item's current price.
-- The menu item relationship uses `PROTECT`, so menu items used in past orders cannot be deleted accidentally.
-
-## Features Implemented
-
-- Created restaurant menu models:
-  - `MenuCategory`
-  - `MenuItem`
-- Created order management models:
-  - `Customer`
-  - `Order`
-  - `OrderItem`
-- Added model relationships using Django foreign keys.
-- Added order status choices using `models.TextChoices`.
-- Added automatic timestamps with `auto_now_add` and `auto_now`.
-- Added price calculations with `total_price` and `line_total`.
-- Registered all models in the Django admin.
-- Added admin list displays, filters, and search fields.
-- Created and applied initial migrations for the `restaurants` and `orders` apps.
-
-## ORM Operations Performed
-
-The following examples can be run inside the Django shell.
-
-Start the shell:
-
-```powershell
-.\venv\Scripts\python.exe manage.py shell
-```
-
-Import the models:
-
-```python
-from decimal import Decimal
-from restaurants.models import MenuCategory, MenuItem
-from orders.models import Customer, Order, OrderItem
-```
-
-### Create Records
-
-Create a menu category:
-
-```python
-rice = MenuCategory.objects.create(
-    name="Rice",
-    description="Rice-based meals"
-)
-```
-
-Create a menu item:
-
-```python
-jollof = MenuItem.objects.create(
-    category=rice,
-    name="Jollof Rice",
-    description="Party-style jollof rice",
-    price=Decimal("2500.00"),
-    is_available=True
-)
-```
-
-Create a customer:
-
-```python
-customer = Customer.objects.create(
-    full_name="Ada Okafor",
-    phone_number="08012345678",
-    address="Lagos"
-)
-```
-
-Create an order:
-
-```python
-order = Order.objects.create(
-    customer=customer,
-    delivery_address=customer.address
-)
-```
-
-Add an item to the order:
-
-```python
-OrderItem.objects.create(
-    order=order,
-    menu_item=jollof,
-    quantity=2
-)
-```
-
-### Read Records
-
-Get all menu items:
-
-```python
-MenuItem.objects.all()
-```
-
-Get only available menu items:
-
-```python
-MenuItem.objects.filter(is_available=True)
-```
-
-Get one menu item by name:
-
-```python
-MenuItem.objects.get(name="Jollof Rice")
-```
-
-Get pending orders:
-
-```python
-Order.objects.filter(status=Order.Status.PENDING)
-```
-
-Search for a customer:
-
-```python
-Customer.objects.filter(full_name__icontains="ada")
-```
-
-Calculate an order total:
-
-```python
-order.total_price
-```
-
-### Update Records
-
-Update a menu item price:
-
-```python
-jollof.price = Decimal("3000.00")
-jollof.save()
-```
-
-Mark a menu item as unavailable:
-
-```python
-MenuItem.objects.filter(name="Jollof Rice").update(is_available=False)
-```
-
-Update an order status:
-
-```python
-order.status = Order.Status.PREPARING
-order.save()
-```
-
-### Delete Records
-
-Delete unused records:
-
-```python
-MenuItem.objects.filter(name="Unused Item").delete()
-```
-
-Menu items that have already been used in an order are protected. If a menu item is linked to an `OrderItem`, Django raises a `ProtectedError` instead of deleting it.
-
-For real restaurant data, the safer option is to mark the item unavailable:
-
-```python
-MenuItem.objects.filter(name="Jollof Rice").update(is_available=False)
-```
-
-For testing only, related order items can be deleted first:
-
-```python
-OrderItem.objects.filter(menu_item__name="Jollof Rice").delete()
-MenuItem.objects.filter(name="Jollof Rice").delete()
-```
-
-## Setup Instructions
-
-### 1. Open the Project Folder
-
-```powershell
-cd C:\Users\ogbon\OneDrive\Desktop\dune-cohort-final-project\restaurant-ordering-system
-```
-
-### 2. Create a Virtual Environment
-
-If the `venv` folder does not already exist, create it:
-
-```powershell
-python -m venv venv
-```
-
-If `python` does not work on your machine, try:
-
-```powershell
-py -m venv venv
-```
-
-### 3. Activate the Virtual Environment
-
-```powershell
-.\venv\Scripts\activate
-```
-
-### 4. Install Django
-
-```powershell
-pip install django
-```
-
-### 5. Run Migrations
-
-```powershell
-python manage.py makemigrations
-python manage.py migrate
-```
-
-### 6. Create a Superuser
-
-```powershell
-python manage.py createsuperuser
-```
-
-Follow the prompts for username, email, and password.
-
-### 7. Run the Development Server
-
-```powershell
-python manage.py runserver
-```
-
-### 8. Open the Project
-
-Main pages:
+| `/` | `home` | Restaurant homepage |
+| `/menu_list/` | `menu_list` | Full menu list |
+| `/menu/<id>/` | `menu_detail` | Detail page for one menu item |
+| `/categories/` | `category_list` | Menu categories and item counts |
+| `/cart/` | `cart_detail` | Customer cart |
+| `/cart/add/<id>/` | `cart_add` | Adds an available item to the cart |
+| `/cart/update/<id>/` | `cart_update` | Updates item quantity in the cart |
+| `/cart/remove/<id>/` | `cart_remove` | Removes item from the cart |
+| `/about/` | `about` | Restaurant about page |
+| `/admin/` | Django admin | Admin dashboard |
+
+## Cart Behavior
+
+The cart uses Django sessions, so each browser session has its own cart.
+
+Customers can:
+
+- Add food from the menu page
+- Add food from the detail page with quantity
+- View cart count in the navbar
+- Update item quantity
+- Remove items
+- See cart subtotal
+
+Unavailable items cannot be added to the cart.
+
+## Templates
+
+Templates are located in `restaurants/templates/`.
 
 ```text
-http://127.0.0.1:8000/
-http://127.0.0.1:8000/menu_list/
-http://127.0.0.1:8000/about/
+restaurants/templates/
+|-- base.html
+`-- restaurants/
+    |-- 404.html
+    |-- about.html
+    |-- cart_detail.html
+    |-- category_list.html
+    |-- home.html
+    |-- menu_detail.html
+    `-- menu_list.html
 ```
 
-Django admin:
-
-```text
-http://127.0.0.1:8000/admin/
-```
-
-## Available Routes
-
-| URL Path | View Function | Description |
-| --- | --- | --- |
-| `/` | `home()` | Displays the HappyMeal welcome message. |
-| `/menu_list/` | `menu_list()` | Displays a basic menu list message. |
-| `/about/` | `about()` | Displays information about HappyMeal Restaurant. |
-| `/admin/` | Django admin | Opens the Django admin dashboard. |
-
-## Migration Status
-
-The following project migrations have been created and applied:
-
-```text
-restaurants
- [X] 0001_initial
-
-orders
- [X] 0001_initial
-```
+All public pages extend `base.html`.
 
 ## Project Structure
 
@@ -394,22 +183,160 @@ restaurant-ordering-system/
 |-- restaurants/
 |   |-- admin.py
 |   |-- apps.py
+|   |-- context_processors.py
 |   |-- models.py
+|   |-- tests.py
+|   |-- urls.py
 |   |-- views.py
-|   `-- migrations/
-|       `-- 0001_initial.py
+|   |-- migrations/
+|   `-- templates/
 |-- orders/
 |   |-- admin.py
 |   |-- apps.py
 |   |-- models.py
+|   |-- tests.py
 |   |-- views.py
 |   `-- migrations/
-|       `-- 0001_initial.py
-|-- screenshots/
 |-- manage.py
 `-- README.md
 ```
 
-## Current Status
+## Setup Instructions
 
-The project now has a working Django structure, basic restaurant pages, database-backed models, Django admin registration, and applied migrations. The next improvement would be connecting the menu and order models to templates and forms so users can place orders through the browser.
+### 1. Open the project folder
+
+```powershell
+cd C:\Users\ogbon\OneDrive\Desktop\dune-cohort-final-project\restaurant-ordering-system
+```
+
+### 2. Create a virtual environment
+
+```powershell
+python -m venv venv
+```
+
+If `python` does not work, use:
+
+```powershell
+py -m venv venv
+```
+
+### 3. Activate the virtual environment
+
+```powershell
+.\venv\Scripts\activate
+```
+
+### 4. Install Django
+
+```powershell
+pip install django
+```
+
+### 5. Apply migrations
+
+```powershell
+python manage.py migrate
+```
+
+This creates the database tables and loads the seeded menu categories, food items, and menu images.
+
+### 6. Create an admin user
+
+```powershell
+python manage.py createsuperuser
+```
+
+### 7. Run the development server
+
+```powershell
+python manage.py runserver
+```
+
+Open the site:
+
+```text
+http://127.0.0.1:8000/
+```
+
+## Useful Development Commands
+
+Run all tests:
+
+```powershell
+python manage.py test
+```
+
+Check migrations:
+
+```powershell
+python manage.py showmigrations
+```
+
+Create new migrations after model changes:
+
+```powershell
+python manage.py makemigrations
+```
+
+Apply migrations:
+
+```powershell
+python manage.py migrate
+```
+
+## Migration Status
+
+Current restaurant migrations:
+
+```text
+[X] 0001_initial
+[X] 0002_seed_menu_data
+[X] 0003_add_menu_images
+[X] 0004_replace_with_matching_menu_images
+[X] 0005_use_crispy_spring_roll_image
+```
+
+Current order migrations:
+
+```text
+[X] 0001_initial
+```
+
+## Testing
+
+The test suite currently covers:
+
+- Menu list rendering
+- Menu detail rendering
+- Category count rendering
+- Home page rendering
+- About page rendering
+- Custom 404 page rendering
+- Empty cart page
+- Adding items to cart
+- Updating cart quantity
+- Removing cart items
+- Blocking unavailable items from cart
+
+Latest verified result:
+
+```text
+Ran 12 tests
+OK
+```
+
+## Notes
+
+- The cart is session-based and does not yet create database orders.
+- A future checkout page can connect cart contents to the existing `Customer`, `Order`, and `OrderItem` models.
+- Menu images are loaded from external URLs, so internet access may affect image display.
+- Food records can be managed from the Django admin after creating a superuser.
+
+## CONCLUSION
+
+HappyMeal Restaurant Ordering System is a polished Django web application for browsing restaurant meals, viewing food details, exploring menu categories, and adding available items to a cart. The project now combines database-backed models, Django templates, Bootstrap styling, seeded menu data, food images, and a session-based cart to create a smooth customer-facing restaurant experience.
+
+The system organizes menu categories, menu items, customers, orders, and order items in a clear structure. Customers can view available meals, see prices and stock status, add items to their cart, update quantities, and remove items before ordering. The project is also tested with Django unit tests to confirm that the main pages and cart features work correctly.
+
+Overall, the project demonstrates a strong foundation for a restaurant ordering platform. A future improvement would be connecting the cart to a full checkout form so customer orders can be saved directly into the existing order models.

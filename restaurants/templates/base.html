@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}HappyMeal{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --hm-green: #16382f;
+            --hm-green-soft: #255948;
+            --hm-red: #9d2f28;
+            --hm-gold: #d99b2b;
+            --hm-ink: #202521;
+            --hm-muted: #69746d;
+            --hm-paper: #fffdf8;
+            --hm-line: #e6ded2;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: linear-gradient(180deg, #fffdf8 0%, #f4f6f0 52%, #fffdf8 100%);
+            color: var(--hm-ink);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        .site-main {
+            min-height: 72vh;
+        }
+
+        .navbar {
+            background: rgba(22, 56, 47, 0.98);
+            box-shadow: 0 10px 30px rgba(22, 56, 47, 0.16);
+        }
+
+        .navbar-brand {
+            letter-spacing: 0;
+        }
+
+        .navbar-brand-mark {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2rem;
+            height: 2rem;
+            margin-right: 0.5rem;
+            border-radius: 50%;
+            background: var(--hm-gold);
+            color: var(--hm-green);
+            font-weight: 800;
+        }
+
+        .navbar-dark .navbar-nav .nav-link {
+            color: rgba(255, 255, 255, 0.78);
+            font-weight: 600;
+        }
+
+        .navbar-dark .navbar-nav .nav-link:hover,
+        .navbar-dark .navbar-nav .nav-link.active {
+            color: #ffffff;
+        }
+
+        .btn {
+            border-radius: 999px;
+            font-weight: 700;
+            padding-inline: 1.1rem;
+        }
+
+        .btn-primary {
+            background: var(--hm-red);
+            border-color: var(--hm-red);
+        }
+
+        .btn-primary:hover,
+        .btn-primary:focus {
+            background: #7e241f;
+            border-color: #7e241f;
+        }
+
+        .btn-outline-secondary,
+        .btn-outline-primary {
+            border-color: var(--hm-green);
+            color: var(--hm-green);
+        }
+
+        .btn-outline-secondary:hover,
+        .btn-outline-primary:hover {
+            background: var(--hm-green);
+            border-color: var(--hm-green);
+            color: #ffffff;
+        }
+
+        .btn-cart {
+            background: var(--hm-gold);
+            border-color: var(--hm-gold);
+            color: var(--hm-green);
+        }
+
+        .btn-cart:hover,
+        .btn-cart:focus {
+            background: #c48921;
+            border-color: #c48921;
+            color: var(--hm-green);
+        }
+
+        .text-muted {
+            color: var(--hm-muted) !important;
+        }
+
+        .page-header {
+            border-bottom: 1px solid var(--hm-line);
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+        }
+
+        .section-kicker {
+            color: var(--hm-red);
+            font-size: 0.78rem;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .hero-section {
+            position: relative;
+            overflow: hidden;
+            min-height: 420px;
+            border-radius: 24px;
+            background:
+                linear-gradient(90deg, rgba(13, 31, 27, 0.9), rgba(13, 31, 27, 0.6), rgba(13, 31, 27, 0.2)),
+                url("https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1600&q=80") center/cover;
+            color: #ffffff;
+        }
+
+        .hero-content {
+            max-width: 680px;
+            padding: 4rem 2rem;
+        }
+
+        .hero-stat {
+            border-left: 3px solid var(--hm-gold);
+            padding-left: 1rem;
+        }
+
+        .feature-tile,
+        .menu-card,
+        .category-card,
+        .dish-detail,
+        .content-panel {
+            background: var(--hm-paper);
+            border: 1px solid var(--hm-line);
+            border-radius: 18px;
+            box-shadow: 0 18px 45px rgba(32, 37, 33, 0.08);
+        }
+
+        .feature-tile {
+            height: 100%;
+            padding: 1.5rem;
+        }
+
+        .feature-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.65rem;
+            height: 2.65rem;
+            margin-bottom: 1rem;
+            border-radius: 50%;
+            background: rgba(217, 155, 43, 0.18);
+            color: var(--hm-red);
+            font-weight: 800;
+        }
+
+        .menu-card {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow: hidden;
+            transition: transform 180ms ease, box-shadow 180ms ease;
+        }
+
+        .menu-card-body {
+            display: flex;
+            flex: 1;
+            flex-direction: column;
+        }
+
+        .menu-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 24px 55px rgba(32, 37, 33, 0.14);
+        }
+
+        .menu-card-img,
+        .menu-card-placeholder,
+        .dish-image,
+        .dish-placeholder,
+        .about-image {
+            min-height: 210px;
+            background-position: center;
+            background-size: cover;
+        }
+
+        .menu-card-img {
+            flex: 0 0 auto;
+            width: 100%;
+            height: 210px;
+            object-fit: cover;
+        }
+
+        .menu-card-placeholder,
+        .dish-placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background:
+                linear-gradient(135deg, rgba(22, 56, 47, 0.94), rgba(157, 47, 40, 0.76)),
+                url("https://images.unsplash.com/photo-1543353071-873f17a7a088?auto=format&fit=crop&w=900&q=80") center/cover;
+            color: #ffffff;
+            font-size: 3rem;
+            font-weight: 800;
+        }
+
+        .price-tag {
+            color: var(--hm-green);
+            font-size: 1.08rem;
+            font-weight: 800;
+        }
+
+        .badge {
+            border-radius: 999px;
+            padding: 0.55rem 0.75rem;
+        }
+
+        .text-bg-success {
+            background-color: var(--hm-green-soft) !important;
+        }
+
+        .text-bg-danger {
+            background-color: var(--hm-red) !important;
+        }
+
+        .category-card {
+            height: 100%;
+            padding: 1.5rem;
+        }
+
+        .cart-nav-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+        }
+
+        .cart-pill {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 1.55rem;
+            height: 1.55rem;
+            border-radius: 999px;
+            background: var(--hm-gold);
+            color: var(--hm-green);
+            font-size: 0.75rem;
+            font-weight: 800;
+        }
+
+        .cart-line {
+            background: var(--hm-paper);
+            border: 1px solid var(--hm-line);
+            border-radius: 18px;
+            box-shadow: 0 18px 45px rgba(32, 37, 33, 0.08);
+        }
+
+        .cart-thumbnail {
+            width: 112px;
+            height: 92px;
+            border-radius: 14px;
+            object-fit: cover;
+        }
+
+        .cart-thumbnail-placeholder {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 112px;
+            height: 92px;
+            border-radius: 14px;
+            background: var(--hm-green);
+            color: #ffffff;
+            font-size: 2rem;
+            font-weight: 800;
+        }
+
+        .quantity-input {
+            max-width: 5.5rem;
+            border-color: var(--hm-line);
+            border-radius: 999px;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .order-panel {
+            background: #f7f1e7;
+            border: 1px solid var(--hm-line);
+            border-radius: 18px;
+            padding: 1rem;
+        }
+
+        .category-count {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 2.4rem;
+            height: 2.4rem;
+            border-radius: 999px;
+            background: var(--hm-green);
+            color: #ffffff;
+            font-weight: 800;
+        }
+
+        .dish-detail {
+            overflow: hidden;
+        }
+
+        .dish-image,
+        .dish-placeholder {
+            height: 100%;
+            min-height: 360px;
+        }
+
+        .detail-list dt {
+            color: var(--hm-muted);
+            font-size: 0.78rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .about-image {
+            min-height: 360px;
+            border-radius: 18px;
+            background:
+                linear-gradient(180deg, rgba(22, 56, 47, 0.14), rgba(22, 56, 47, 0.22)),
+                url("https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1100&q=80") center/cover;
+        }
+
+        footer {
+            color: rgba(255, 255, 255, 0.76);
+            background: var(--hm-green);
+        }
+
+        @media (max-width: 767.98px) {
+            .hero-content {
+                padding: 3rem 1.25rem;
+            }
+
+            .hero-section {
+                border-radius: 18px;
+            }
+
+            .page-header {
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+        <div class="container">
+            <a class="navbar-brand fw-semibold d-inline-flex align-items-center" href="{% url 'home' %}">
+                <span class="navbar-brand-mark">H</span>
+                HappyMeal
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'home' %}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'menu_list' or request.resolver_match.url_name == 'menu_detail' or request.resolver_match.url_name == 'category_list' %}active{% endif %}" href="{% url 'menu_list' %}">Menu</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'about' %}active{% endif %}" href="{% url 'about' %}">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link cart-nav-link {% if request.resolver_match.url_name == 'cart_detail' %}active{% endif %}" href="{% url 'cart_detail' %}">
+                            Cart
+                            <span class="cart-pill">{{ cart_item_count }}</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main class="site-main py-5">
+        <div class="container">
+            {% if messages %}
+                <div class="mb-4">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} mb-2" role="alert">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <footer class="py-4">
+        <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+            <small>&copy; {% now "Y" %} HappyMeal Restaurant Ordering System</small>
+            <small>Fresh meals, warm service, simple ordering.</small>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

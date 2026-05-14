@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Categories | HappyMeal{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex flex-column flex-md-row align-items-md-end justify-content-between">
+    <div>
+        <p class="section-kicker mb-2">Menu groups</p>
+        <h1 class="display-6 fw-bold mb-2">Categories</h1>
+        <p class="text-muted mb-0">See each menu category and how many menu items it contains.</p>
+    </div>
+    <a class="btn btn-outline-primary" href="{% url 'menu_list' %}">View Menu</a>
+</div>
+
+{% if categories %}
+    <div class="row g-4">
+        {% for category in categories %}
+            <div class="col-md-6 col-lg-4">
+                <article class="category-card">
+                    <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+                        <h2 class="h4 mb-0">{{ category.name }}</h2>
+                        <span class="category-count">{{ category.product_count }}</span>
+                    </div>
+                    {% if category.description %}
+                        <p class="text-muted mb-4">{{ category.description }}</p>
+                    {% endif %}
+                    <a class="btn btn-sm btn-outline-secondary" href="{% url 'menu_list' %}">View Menu</a>
+                </article>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="alert alert-info">No categories have been added yet.</div>
+{% endif %}
+{% endblock %}
