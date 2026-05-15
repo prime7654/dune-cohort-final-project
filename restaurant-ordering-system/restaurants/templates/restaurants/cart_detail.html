@@ -20,8 +20,8 @@
                     <article class="cart-line p-3">
                         <div class="d-flex flex-column flex-md-row gap-3">
                             <div>
-                                {% if cart_item.menu_item.image_url %}
-                                    <img class="cart-thumbnail" src="{{ cart_item.menu_item.image_url }}" alt="{{ cart_item.menu_item.name }}">
+                                {% if cart_item.menu_item.image_src %}
+                                    <img class="cart-thumbnail" src="{{ cart_item.menu_item.image_src }}" alt="{{ cart_item.menu_item.name }}">
                                 {% else %}
                                     <span class="cart-thumbnail-placeholder">{{ cart_item.menu_item.name|slice:":1" }}</span>
                                 {% endif %}

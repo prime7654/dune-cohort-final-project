@@ -17,13 +17,17 @@ def _get_cart(request):
     return request.session.setdefault(CART_SESSION_KEY, {})
 
 
-def _clean_quantity(value, default=1):
+def _clean_quantity(value, default=1, maximum=MAX_CART_QUANTITY):
     try:
         quantity = int(value)
     except (TypeError, ValueError):
         quantity = default
 
-    return max(1, min(quantity, MAX_CART_QUANTITY))
+    return max(1, min(quantity, maximum))
+
+
+def _is_orderable(menu_item):
+    return menu_item.is_available and menu_item.stock > 0
 
 
 def _redirect_after_cart_action(request):
@@ -71,7 +75,7 @@ def menu_item_detail(request, pk):
 
 def menu_item_create(request):
     if request.method == "POST":
-        form = MenuItemForm(request.POST)
+        form = MenuItemForm(request.POST, request.FILES)
         if form.is_valid():
             menu_item = form.save()
             messages.success(request, f"{menu_item.name} was created successfully.")
@@ -94,7 +98,7 @@ def menu_item_update(request, pk):
     menu_item = get_object_or_404(MenuItem.objects.select_related("category"), pk=pk)
 
     if request.method == "POST":
-        form = MenuItemForm(request.POST, instance=menu_item)
+        form = MenuItemForm(request.POST, request.FILES, instance=menu_item)
         if form.is_valid():
             menu_item = form.save()
             messages.success(request, f"{menu_item.name} was updated successfully.")
@@ -267,15 +271,18 @@ def cart_add(request, pk):
     if request.method != "POST":
         return redirect("menu_detail", pk=pk)
 
-    if not menu_item.is_available:
+    if not _is_orderable(menu_item):
         messages.warning(request, f"{menu_item.name} is currently unavailable.")
         return _redirect_after_cart_action(request)
 
     cart = _get_cart(request)
     item_key = str(menu_item.pk)
-    quantity = _clean_quantity(request.POST.get("quantity"))
+    quantity = _clean_quantity(
+        request.POST.get("quantity"),
+        maximum=min(MAX_CART_QUANTITY, menu_item.stock),
+    )
     current_quantity = int(cart.get(item_key, 0))
-    cart[item_key] = min(current_quantity + quantity, MAX_CART_QUANTITY)
+    cart[item_key] = min(current_quantity + quantity, MAX_CART_QUANTITY, menu_item.stock)
     request.session[CART_SESSION_KEY] = cart
     request.session.modified = True
 
@@ -291,7 +298,17 @@ def cart_update(request, pk):
 
     cart = _get_cart(request)
     item_key = str(menu_item.pk)
-    quantity = _clean_quantity(request.POST.get("quantity"))
+    if not _is_orderable(menu_item):
+        cart.pop(item_key, None)
+        request.session[CART_SESSION_KEY] = cart
+        request.session.modified = True
+        messages.warning(request, f"{menu_item.name} is currently unavailable.")
+        return redirect("cart_detail")
+
+    quantity = _clean_quantity(
+        request.POST.get("quantity"),
+        maximum=min(MAX_CART_QUANTITY, menu_item.stock),
+    )
     cart[item_key] = quantity
     request.session[CART_SESSION_KEY] = cart
     request.session.modified = True

@@ -1,3 +1,4 @@
+{% load static %}
 <!doctype html>
 <html lang="en">
 <head>
@@ -364,6 +365,7 @@
             }
         }
     </style>
+    <link href="{% static 'restaurants/css/style.css' %}" rel="stylesheet">
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
@@ -381,7 +383,7 @@
                         <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'home' %}">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.url_name == 'menu_list' or request.resolver_match.url_name == 'menu_detail' or request.resolver_match.url_name == 'category_list' %}active{% endif %}" href="{% url 'menu_list' %}">Menu</a>
+                        <a class="nav-link {% if request.resolver_match.url_name == 'menu_list' or request.resolver_match.url_name == 'menu_detail' or request.resolver_match.url_name == 'menu_item_list' or request.resolver_match.url_name == 'menu_item_detail' or request.resolver_match.url_name == 'menu_item_add' or request.resolver_match.url_name == 'menu_item_edit' or request.resolver_match.url_name == 'menu_item_delete' or request.resolver_match.url_name == 'category_list' or request.resolver_match.url_name == 'category_detail' or request.resolver_match.url_name == 'category_add' or request.resolver_match.url_name == 'category_edit' or request.resolver_match.url_name == 'category_delete' %}active{% endif %}" href="{% url 'menu_list' %}">Menu</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.url_name == 'about' %}active{% endif %}" href="{% url 'about' %}">About</a>
@@ -412,10 +414,41 @@
         </div>
     </main>
 
-    <footer class="py-4">
-        <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
-            <small>&copy; {% now "Y" %} HappyMeal Restaurant Ordering System</small>
-            <small>Fresh meals, warm service, simple ordering.</small>
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-main">
+                <div class="footer-brand">
+                    <a class="footer-logo" href="{% url 'home' %}">
+                        <span class="navbar-brand-mark">H</span>
+                        <span>HappyMeal</span>
+                    </a>
+                    <p class="footer-copy mb-0">Fresh meals, warm service, and simple ordering for every craving.</p>
+                </div>
+
+                <div class="footer-section">
+                    <h2 class="footer-title">Explore</h2>
+                    <nav class="footer-links" aria-label="Footer navigation">
+                        <a href="{% url 'home' %}">Home</a>
+                        <a href="{% url 'menu_list' %}">Menu</a>
+                        <a href="{% url 'category_list' %}">Categories</a>
+                        <a href="{% url 'about' %}">About</a>
+                    </nav>
+                </div>
+
+                <div class="footer-section">
+                    <h2 class="footer-title">Visit</h2>
+                    <div class="footer-info">
+                        <span>Lagos, Nigeria</span>
+                        <span>Open daily: 9:00 AM - 10:00 PM</span>
+                        <span>Dine-in, pickup, and delivery</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <small>&copy; {% now "Y" %} HappyMeal Restaurant Ordering System</small>
+                <a href="{% url 'cart_detail' %}">View Cart</a>
+            </div>
         </div>
     </footer>
 

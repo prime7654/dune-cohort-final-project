@@ -3,37 +3,44 @@
 {% block title %}Categories | HappyMeal{% endblock %}
 
 {% block content %}
-<div class="page-header d-flex flex-column flex-md-row align-items-md-end justify-content-between">
-    <div>
-        <p class="section-kicker mb-2">Menu groups</p>
-        <h1 class="display-6 fw-bold mb-2">Categories</h1>
-        <p class="text-muted mb-0">See each menu category and how many menu items it contains.</p>
+<section class="menu-page-intro category-page-intro">
+    <div class="menu-page-copy">
+        <p class="section-kicker mb-2">Menu sections</p>
+        <h1 class="display-6 fw-bold mb-2">Explore Categories</h1>
+        <p class="menu-page-lede mb-0">Move through the menu by starters, mains, grills, drinks, and seasonal additions.</p>
     </div>
-    <div class="d-flex flex-wrap gap-2">
+    <div class="menu-page-actions">
         <a class="btn btn-primary" href="{% url 'category_add' %}">Add Category</a>
         <a class="btn btn-outline-primary" href="{% url 'menu_list' %}">View Menu</a>
     </div>
-</div>
+</section>
 
 {% if categories %}
-    <div class="row g-4">
+    <div class="category-grid">
         {% for category in categories %}
-            <div class="col-md-6 col-lg-4">
-                <article class="category-card">
-                    <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
-                        <h2 class="h4 mb-0">{{ category.name }}</h2>
-                        <span class="category-count">{{ category.menu_item_count }}</span>
-                    </div>
+            <article class="category-card restaurant-category-card">
+                <div class="category-card-top">
+                    <span class="category-initial" aria-hidden="true">{{ category.name|slice:":1" }}</span>
+                    <span class="category-count">
+                        {{ category.menu_item_count }}
+                    </span>
+                </div>
+                <div class="category-card-body">
+                    <p class="section-kicker mb-2">Kitchen section</p>
+                    <h2 class="h4 mb-2">{{ category.name }}</h2>
                     {% if category.description %}
-                        <p class="text-muted mb-4">{{ category.description }}</p>
+                        <p class="category-description">{{ category.description }}</p>
                     {% endif %}
+                </div>
+                <div class="category-card-footer">
+                    <span class="category-items-label">{{ category.menu_item_count }} menu item{{ category.menu_item_count|pluralize }}</span>
                     <div class="d-flex flex-wrap gap-2">
                         <a class="btn btn-sm btn-primary" href="{% url 'category_detail' category.pk %}">View</a>
                         <a class="btn btn-sm btn-outline-secondary" href="{% url 'category_edit' category.pk %}">Edit</a>
                         <a class="btn btn-sm btn-outline-secondary" href="{% url 'category_delete' category.pk %}">Delete</a>
                     </div>
-                </article>
-            </div>
+                </div>
+            </article>
         {% endfor %}
     </div>
 {% else %}

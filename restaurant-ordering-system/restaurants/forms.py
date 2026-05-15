@@ -43,11 +43,13 @@ class MenuItemForm(forms.ModelForm):
             "name",
             "description",
             "price",
+            "stock",
             "is_available",
-            "image_url",
+            "image",
         ]
         widgets = {
             "description": forms.Textarea(attrs={"rows": 4}),
+            "image": forms.ClearableFileInput(attrs={"accept": "image/*"}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -69,13 +71,24 @@ class MenuItemForm(forms.ModelForm):
             raise forms.ValidationError("Price must be at least 0.01.")
         return price
 
-    def clean_image_url(self):
-        return self.cleaned_data.get("image_url", "").strip()
+    def clean_stock(self):
+        stock = self.cleaned_data["stock"]
+        if stock < 0:
+            raise forms.ValidationError("Stock cannot be negative.")
+        return stock
 
     def clean(self):
         cleaned_data = super().clean()
         category = cleaned_data.get("category")
         name = cleaned_data.get("name")
+        stock = cleaned_data.get("stock")
+        is_available = cleaned_data.get("is_available")
+
+        if stock == 0 and is_available:
+            self.add_error(
+                "stock",
+                "Set stock above 0 or mark this menu item as unavailable.",
+            )
 
         if not category or not name:
             return cleaned_data

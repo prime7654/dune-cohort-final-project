@@ -7,6 +7,9 @@ __pycache__/
 *.db
 *.sqlite3
 *.log
+media/*
+!media/menu_items/
+!media/menu_items/*
 .DS_Store
 *.env
 *.venv

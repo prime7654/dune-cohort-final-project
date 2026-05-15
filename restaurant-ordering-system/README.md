@@ -9,6 +9,8 @@ The project now supports complete CRUD for:
 
 Users can create new menu items and categories, view existing records, edit saved records through pre-filled forms, and delete records only after confirming the action.
 
+Menu items also support stock tracking and image uploads. Uploaded images are served from the local `media/` directory during development and are displayed as thumbnails on list pages and larger images on detail pages.
+
 ## Project Description
 
 ToriloShop now includes full menu item and category management for a restaurant menu.
@@ -37,9 +39,20 @@ All create, edit, and delete actions show success flash messages after completio
 | --- | --- | --- |
 | Menu Item List | `/menu-items/` | Displays all menu items. |
 | Menu Item Detail | `/menu-items/<id>/` | Displays the full details for one menu item. |
-| Add Menu Item Form | `/menu-items/add/` | Creates a new menu item with category, name, description, price, availability, and image URL fields. |
-| Edit Menu Item Form | `/menu-items/<id>/edit/` | Shows a pre-filled form for an existing menu item and saves updated values. |
+| Add Menu Item Form | `/menu-items/add/` | Creates a new menu item with category, name, description, price, stock, availability, and uploaded image fields. |
+| Edit Menu Item Form | `/menu-items/<id>/edit/` | Shows a pre-filled form for an existing menu item and saves updated values, including stock and image changes. |
 | Delete Menu Item Confirmation | `/menu-items/<id>/delete/` | Shows a confirmation page. The menu item is deleted only after submitting the POST form. |
+
+### Image And Stock Features
+
+| Feature | Description |
+| --- | --- |
+| Menu item image upload | Uses Django `ImageField` to upload images into `media/menu_items/`. |
+| List page thumbnail | Shows a thumbnail image for each menu item on the menu list page. |
+| Detail page image | Shows a larger image for the selected menu item on the detail page. |
+| Seeded local images | The original menu image URLs were downloaded into `media/menu_items/` and are now used through `ImageField`. |
+| Stock field | Tracks how many units are available for each menu item. |
+| Stock-aware cart | Prevents out-of-stock menu items from being added and caps cart quantities by available stock. |
 
 ### Category Features
 
@@ -51,11 +64,19 @@ All create, edit, and delete actions show success flash messages after completio
 | Edit Category Form | `/categories/<id>/edit/` | Shows a pre-filled form for an existing category and saves updated values. |
 | Delete Category Confirmation | `/categories/<id>/delete/` | Shows a confirmation page. The category is deleted only after submitting the POST form. |
 
+### Styling Features
+
+- Custom restaurant-style CSS is loaded from `restaurants/static/restaurants/css/style.css`.
+- The menu page uses image-led cards, category chips, stock badges, and polished ordering actions.
+- The categories page uses styled restaurant section cards with item counts and clear management actions.
+- The footer includes brand details, quick links, visit information, opening hours, and a cart link.
+
 ## Validation And Security
 
 - All forms use Django `ModelForm` validation.
 - Required fields are validated before saving.
 - Menu item price must be at least `0.01`.
+- Available menu items must have stock above `0`.
 - Duplicate menu item names are blocked within the same category.
 - Category names must be unique.
 - Every create, edit, and delete form includes `{% csrf_token %}`.
@@ -69,6 +90,16 @@ All create, edit, and delete actions show success flash messages after completio
 - SQLite
 - Django Templates
 - Bootstrap
+- Pillow
+
+## Admin Features
+
+The Django admin includes custom menu item management:
+
+- `list_display` shows name, price, category, stock, and availability.
+- `search_fields` supports searching by menu item name and category name.
+- `list_filter` supports filtering by category and availability.
+- A custom admin action, `Mark as out of stock`, sets `stock=0` and `is_available=False`.
 
 ## Project Structure
 
@@ -86,6 +117,10 @@ restaurant-ordering-system/
 |   |-- views.py
 |   |-- tests.py
 |   |-- migrations/
+|   |-- static/
+|   |   `-- restaurants/
+|   |       `-- css/
+|   |           `-- style.css
 |   `-- templates/
 |       |-- base.html
 |       `-- restaurants/
@@ -98,6 +133,7 @@ restaurant-ordering-system/
 |           `-- menu_item_form.html
 |-- orders/
 |-- db.sqlite3
+|-- media/
 |-- manage.py
 `-- README.md
 ```
@@ -130,10 +166,10 @@ py -m venv venv
 .\venv\Scripts\activate
 ```
 
-### 4. Install Django
+### 4. Install dependencies
 
 ```powershell
-pip install django
+pip install django Pillow
 ```
 
 ### 5. Apply database migrations
@@ -189,6 +225,7 @@ http://127.0.0.1:8000/admin/
 | `/menu/<id>/` | Public menu item detail page |
 | `/menu-items/` | Menu item list |
 | `/menu-items/add/` | Add menu item |
+| `/menu-items/<id>/` | Menu item detail |
 | `/menu-items/<id>/edit/` | Edit menu item |
 | `/menu-items/<id>/delete/` | Delete menu item confirmation |
 | `/categories/` | Category list |
@@ -200,4 +237,4 @@ http://127.0.0.1:8000/admin/
 
 ## Summary
 
-ToriloShop now has a complete CRUD workflow for managing menu items and categories. The implementation includes validated forms, pre-filled edit pages, safe delete confirmation pages, CSRF protection, success flash messages, and automated tests for the main CRUD behavior.
+ToriloShop now has a complete CRUD workflow for managing menu items and categories. The implementation includes validated forms, stock tracking, uploaded menu item images, custom restaurant styling, a polished menu page, styled category cards, an upgraded footer, media serving during development, admin search/filter/action support, pre-filled edit pages, safe delete confirmation pages, CSRF protection, success flash messages, and automated tests for the main behavior.

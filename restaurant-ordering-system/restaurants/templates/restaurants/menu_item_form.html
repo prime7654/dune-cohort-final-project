@@ -13,7 +13,7 @@
 </div>
 
 <div class="content-panel p-4 p-md-5">
-    <form method="post" novalidate>
+    <form method="post" enctype="multipart/form-data" novalidate>
         {% csrf_token %}
 
         {% if form.non_field_errors %}
@@ -48,9 +48,17 @@
             </div>
 
             <div class="col-md-6">
-                <label class="form-label fw-semibold" for="{{ form.image_url.id_for_label }}">Image URL</label>
-                {{ form.image_url }}
-                {% for error in form.image_url.errors %}
+                <label class="form-label fw-semibold" for="{{ form.stock.id_for_label }}">Stock</label>
+                {{ form.stock }}
+                {% for error in form.stock.errors %}
+                    <div class="invalid-feedback d-block">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="col-12">
+                <label class="form-label fw-semibold" for="{{ form.image.id_for_label }}">Upload Image</label>
+                {{ form.image }}
+                {% for error in form.image.errors %}
                     <div class="invalid-feedback d-block">{{ error }}</div>
                 {% endfor %}
             </div>

@@ -1,6 +1,10 @@
+from unittest.mock import patch
+
+from django.contrib.admin.sites import AdminSite
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
+from .admin import MenuItemAdmin
 from .models import MenuCategory, MenuItem
 
 
@@ -15,6 +19,7 @@ class MenuViewTests(TestCase):
             name="Jollof Rice",
             description="Party-style jollof rice",
             price="2500.00",
+            stock=12,
             is_available=True,
         )
 
@@ -24,6 +29,7 @@ class MenuViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Jollof Rice")
         self.assertContains(response, "In Stock")
+        self.assertContains(response, "12 available")
         self.assertContains(response, "Add to Cart")
         self.assertTemplateUsed(response, "restaurants/menu_list.html")
 
@@ -35,6 +41,7 @@ class MenuViewTests(TestCase):
         self.assertContains(response, "2500.00")
         self.assertContains(response, "Rice")
         self.assertContains(response, "In Stock")
+        self.assertContains(response, "12 available")
         self.assertTemplateUsed(response, "restaurants/menu_detail.html")
 
     def test_menu_detail_has_add_to_cart_form(self):
@@ -43,6 +50,24 @@ class MenuViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Add to Cart")
         self.assertContains(response, reverse("cart_add", args=[self.menu_item.pk]))
+
+    def test_menu_list_uses_uploaded_image_thumbnail(self):
+        self.menu_item.image = "menu_items/jollof.jpg"
+        self.menu_item.save(update_fields=["image"])
+
+        response = self.client.get(reverse("menu_list"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'src="/media/menu_items/jollof.jpg"')
+
+    def test_menu_detail_uses_uploaded_full_image(self):
+        self.menu_item.image = "menu_items/jollof-detail.jpg"
+        self.menu_item.save(update_fields=["image"])
+
+        response = self.client.get(reverse("menu_detail", args=[self.menu_item.pk]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'src="/media/menu_items/jollof-detail.jpg"')
 
     def test_category_list_renders_menu_item_count(self):
         response = self.client.get(reverse("category_list"))
@@ -84,14 +109,15 @@ class MenuItemCrudTests(TestCase):
                 "name": "Grilled Turkey",
                 "description": "Smoky turkey with pepper sauce",
                 "price": "4500.00",
+                "stock": "8",
                 "is_available": "on",
-                "image_url": "https://example.com/turkey.jpg",
             },
             follow=True,
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertTrue(MenuItem.objects.filter(name="Grilled Turkey").exists())
+        created_item = MenuItem.objects.get(name="Grilled Turkey")
+        self.assertEqual(created_item.stock, 8)
         self.assertContains(response, "Grilled Turkey was created successfully.")
 
     def test_add_menu_item_validates_required_and_price_fields(self):
@@ -102,7 +128,8 @@ class MenuItemCrudTests(TestCase):
                 "name": "",
                 "description": "",
                 "price": "0.00",
-                "image_url": "",
+                "stock": "0",
+                "is_available": "on",
             },
         )
 
@@ -110,6 +137,7 @@ class MenuItemCrudTests(TestCase):
         self.assertFalse(MenuItem.objects.filter(price="0.00").exists())
         self.assertContains(response, "This field is required.")
         self.assertContains(response, "Price must be at least 0.01.")
+        self.assertContains(response, "Set stock above 0 or mark this menu item as unavailable.")
 
     def test_edit_menu_item_form_is_prefilled(self):
         response = self.client.get(reverse("menu_item_edit", args=[self.menu_item.pk]))
@@ -121,6 +149,7 @@ class MenuItemCrudTests(TestCase):
         )
         self.assertContains(response, "Edit Menu Item")
         self.assertContains(response, 'value="Jollof Rice"')
+        self.assertContains(response, 'value="10"')
         self.assertContains(response, "Party-style jollof rice")
         self.assertTemplateUsed(response, "restaurants/menu_item_form.html")
 
@@ -132,8 +161,8 @@ class MenuItemCrudTests(TestCase):
                 "name": "Jollof Rice Deluxe",
                 "description": "Updated party-style jollof rice",
                 "price": "3000.00",
+                "stock": "14",
                 "is_available": "on",
-                "image_url": "",
             },
             follow=True,
         )
@@ -142,6 +171,7 @@ class MenuItemCrudTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(self.menu_item.name, "Jollof Rice Deluxe")
         self.assertEqual(str(self.menu_item.price), "3000.00")
+        self.assertEqual(self.menu_item.stock, 14)
         self.assertContains(response, "Jollof Rice Deluxe was updated successfully.")
 
     def test_delete_menu_item_confirmation_does_not_delete_on_get(self):
@@ -166,6 +196,20 @@ class MenuItemCrudTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertFalse(MenuItem.objects.filter(pk=self.menu_item.pk).exists())
         self.assertContains(response, "Jollof Rice was deleted successfully.")
+
+    def test_admin_action_marks_menu_items_out_of_stock(self):
+        menu_item_admin = MenuItemAdmin(MenuItem, AdminSite())
+
+        with patch.object(menu_item_admin, "message_user") as message_user:
+            menu_item_admin.mark_as_out_of_stock(
+                None,
+                MenuItem.objects.filter(pk=self.menu_item.pk),
+            )
+
+        self.menu_item.refresh_from_db()
+        self.assertEqual(self.menu_item.stock, 0)
+        self.assertFalse(self.menu_item.is_available)
+        message_user.assert_called_once()
 
 
 class CategoryCrudTests(TestCase):
@@ -304,6 +348,23 @@ class CartViewTests(TestCase):
             2,
         )
 
+    def test_add_item_to_cart_is_capped_by_stock(self):
+        self.menu_item.stock = 3
+        self.menu_item.save(update_fields=["stock"])
+
+        response = self.client.post(
+            reverse("cart_add", args=[self.menu_item.pk]),
+            {"quantity": "9", "next": reverse("cart_detail")},
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "NGN 7500.00")
+        self.assertEqual(
+            self.client.session["cart"][str(self.menu_item.pk)],
+            3,
+        )
+
     def test_update_cart_quantity(self):
         session = self.client.session
         session["cart"] = {str(self.menu_item.pk): 1}
@@ -354,6 +415,28 @@ class CartViewTests(TestCase):
         self.assertContains(response, "currently unavailable")
         self.assertNotIn(
             str(unavailable_item.pk),
+            self.client.session.get("cart", {}),
+        )
+
+    def test_out_of_stock_item_cannot_be_added_to_cart(self):
+        out_of_stock_item = MenuItem.objects.create(
+            category=self.category,
+            name="Finished Rice",
+            price="3000.00",
+            stock=0,
+            is_available=False,
+        )
+
+        response = self.client.post(
+            reverse("cart_add", args=[out_of_stock_item.pk]),
+            {"quantity": "1", "next": reverse("cart_detail")},
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "currently unavailable")
+        self.assertNotIn(
+            str(out_of_stock_item.pk),
             self.client.session.get("cart", {}),
         )
 
