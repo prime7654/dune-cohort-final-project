@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Delete {{ object_type|title }} | HappyMeal{% endblock %}
+
+{% block content %}
+<div class="content-panel p-4 p-md-5">
+    <p class="section-kicker mb-2">Confirm delete</p>
+    <h1 class="display-6 fw-bold mb-3">Delete {{ object_type }}?</h1>
+    <p class="lead text-muted mb-4">
+        Are you sure you want to delete <strong>{{ object }}</strong>? This action cannot be undone.
+    </p>
+
+    <form method="post" class="d-flex flex-wrap gap-2">
+        {% csrf_token %}
+        <button class="btn btn-primary" type="submit">Delete {{ object_type|title }}</button>
+        <a class="btn btn-outline-secondary" href="{{ cancel_url }}">Cancel</a>
+    </form>
+</div>
+{% endblock %}

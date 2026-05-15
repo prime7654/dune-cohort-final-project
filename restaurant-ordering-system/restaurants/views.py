@@ -6,6 +6,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 
+from .forms import MenuCategoryForm, MenuItemForm
 from .models import MenuCategory, MenuItem
 
 CART_SESSION_KEY = "cart"
@@ -48,6 +49,10 @@ def menu_list(request):
     )
 
 
+def menu_item_list(request):
+    return menu_list(request)
+
+
 def menu_detail(request, pk):
     menu_item = get_object_or_404(
         MenuItem.objects.select_related("category"),
@@ -60,14 +65,160 @@ def menu_detail(request, pk):
     )
 
 
+def menu_item_detail(request, pk):
+    return menu_detail(request, pk)
+
+
+def menu_item_create(request):
+    if request.method == "POST":
+        form = MenuItemForm(request.POST)
+        if form.is_valid():
+            menu_item = form.save()
+            messages.success(request, f"{menu_item.name} was created successfully.")
+            return redirect("menu_item_detail", pk=menu_item.pk)
+    else:
+        form = MenuItemForm()
+
+    return render(
+        request,
+        "restaurants/menu_item_form.html",
+        {
+            "form": form,
+            "page_title": "Add Menu Item",
+            "submit_label": "Create Menu Item",
+        },
+    )
+
+
+def menu_item_update(request, pk):
+    menu_item = get_object_or_404(MenuItem.objects.select_related("category"), pk=pk)
+
+    if request.method == "POST":
+        form = MenuItemForm(request.POST, instance=menu_item)
+        if form.is_valid():
+            menu_item = form.save()
+            messages.success(request, f"{menu_item.name} was updated successfully.")
+            return redirect("menu_item_detail", pk=menu_item.pk)
+    else:
+        form = MenuItemForm(instance=menu_item)
+
+    return render(
+        request,
+        "restaurants/menu_item_form.html",
+        {
+            "form": form,
+            "page_title": "Edit Menu Item",
+            "menu_item": menu_item,
+            "submit_label": "Save Changes",
+        },
+    )
+
+
+def menu_item_delete(request, pk):
+    menu_item = get_object_or_404(MenuItem, pk=pk)
+
+    if request.method == "POST":
+        menu_item_name = menu_item.name
+        menu_item.delete()
+        messages.success(request, f"{menu_item_name} was deleted successfully.")
+        return redirect("menu_item_list")
+
+    return render(
+        request,
+        "restaurants/confirm_delete.html",
+        {
+            "cancel_url": reverse("menu_item_detail", args=[menu_item.pk]),
+            "object": menu_item,
+            "object_type": "menu item",
+        },
+    )
+
+
 def category_list(request):
     categories = MenuCategory.objects.annotate(
-        product_count=Count("menu_items"),
+        menu_item_count=Count("menu_items"),
     )
     return render(
         request,
         "restaurants/category_list.html",
         {"categories": categories},
+    )
+
+
+def category_detail(request, pk):
+    category = get_object_or_404(
+        MenuCategory.objects.prefetch_related("menu_items"),
+        pk=pk,
+    )
+    return render(
+        request,
+        "restaurants/category_detail.html",
+        {"category": category},
+    )
+
+
+def category_create(request):
+    if request.method == "POST":
+        form = MenuCategoryForm(request.POST)
+        if form.is_valid():
+            category = form.save()
+            messages.success(request, f"{category.name} was created successfully.")
+            return redirect("category_detail", pk=category.pk)
+    else:
+        form = MenuCategoryForm()
+
+    return render(
+        request,
+        "restaurants/category_form.html",
+        {
+            "form": form,
+            "page_title": "Add Category",
+            "submit_label": "Create Category",
+        },
+    )
+
+
+def category_update(request, pk):
+    category = get_object_or_404(MenuCategory, pk=pk)
+
+    if request.method == "POST":
+        form = MenuCategoryForm(request.POST, instance=category)
+        if form.is_valid():
+            category = form.save()
+            messages.success(request, f"{category.name} was updated successfully.")
+            return redirect("category_detail", pk=category.pk)
+    else:
+        form = MenuCategoryForm(instance=category)
+
+    return render(
+        request,
+        "restaurants/category_form.html",
+        {
+            "category": category,
+            "form": form,
+            "page_title": "Edit Category",
+            "submit_label": "Save Changes",
+        },
+    )
+
+
+def category_delete(request, pk):
+    category = get_object_or_404(MenuCategory, pk=pk)
+
+    if request.method == "POST":
+        category_name = category.name
+        category.delete()
+        messages.success(request, f"{category_name} was deleted successfully.")
+        return redirect("category_list")
+
+    return render(
+        request,
+        "restaurants/confirm_delete.html",
+        {
+            "cancel_url": reverse("category_detail", args=[category.pk]),
+            "object": category,
+            "object_type": "category",
+        },
     )
 
 

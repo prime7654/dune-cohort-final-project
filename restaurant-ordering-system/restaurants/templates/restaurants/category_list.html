@@ -9,7 +9,10 @@
         <h1 class="display-6 fw-bold mb-2">Categories</h1>
         <p class="text-muted mb-0">See each menu category and how many menu items it contains.</p>
     </div>
-    <a class="btn btn-outline-primary" href="{% url 'menu_list' %}">View Menu</a>
+    <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-primary" href="{% url 'category_add' %}">Add Category</a>
+        <a class="btn btn-outline-primary" href="{% url 'menu_list' %}">View Menu</a>
+    </div>
 </div>
 
 {% if categories %}
@@ -19,12 +22,16 @@
                 <article class="category-card">
                     <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
                         <h2 class="h4 mb-0">{{ category.name }}</h2>
-                        <span class="category-count">{{ category.product_count }}</span>
+                        <span class="category-count">{{ category.menu_item_count }}</span>
                     </div>
                     {% if category.description %}
                         <p class="text-muted mb-4">{{ category.description }}</p>
                     {% endif %}
-                    <a class="btn btn-sm btn-outline-secondary" href="{% url 'menu_list' %}">View Menu</a>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a class="btn btn-sm btn-primary" href="{% url 'category_detail' category.pk %}">View</a>
+                        <a class="btn btn-sm btn-outline-secondary" href="{% url 'category_edit' category.pk %}">Edit</a>
+                        <a class="btn btn-sm btn-outline-secondary" href="{% url 'category_delete' category.pk %}">Delete</a>
+                    </div>
                 </article>
             </div>
         {% endfor %}

@@ -44,13 +44,231 @@ class MenuViewTests(TestCase):
         self.assertContains(response, "Add to Cart")
         self.assertContains(response, reverse("cart_add", args=[self.menu_item.pk]))
 
-    def test_category_list_renders_product_count(self):
+    def test_category_list_renders_menu_item_count(self):
         response = self.client.get(reverse("category_list"))
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Rice")
         self.assertContains(response, "1")
         self.assertTemplateUsed(response, "restaurants/category_list.html")
+
+
+class MenuItemCrudTests(TestCase):
+    def setUp(self):
+        self.category = MenuCategory.objects.create(
+            name="Rice",
+            description="Rice meals",
+        )
+        self.menu_item = MenuItem.objects.create(
+            category=self.category,
+            name="Jollof Rice",
+            description="Party-style jollof rice",
+            price="2500.00",
+            is_available=True,
+        )
+
+    def test_add_menu_item_form_renders(self):
+        response = self.client.get(reverse("menu_item_add"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(reverse("menu_item_add"), "/menu-items/add/")
+        self.assertContains(response, "Add Menu Item")
+        self.assertContains(response, "csrfmiddlewaretoken")
+        self.assertTemplateUsed(response, "restaurants/menu_item_form.html")
+
+    def test_add_menu_item_creates_item_and_shows_success_message(self):
+        response = self.client.post(
+            reverse("menu_item_add"),
+            {
+                "category": self.category.pk,
+                "name": "Grilled Turkey",
+                "description": "Smoky turkey with pepper sauce",
+                "price": "4500.00",
+                "is_available": "on",
+                "image_url": "https://example.com/turkey.jpg",
+            },
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(MenuItem.objects.filter(name="Grilled Turkey").exists())
+        self.assertContains(response, "Grilled Turkey was created successfully.")
+
+    def test_add_menu_item_validates_required_and_price_fields(self):
+        response = self.client.post(
+            reverse("menu_item_add"),
+            {
+                "category": "",
+                "name": "",
+                "description": "",
+                "price": "0.00",
+                "image_url": "",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(MenuItem.objects.filter(price="0.00").exists())
+        self.assertContains(response, "This field is required.")
+        self.assertContains(response, "Price must be at least 0.01.")
+
+    def test_edit_menu_item_form_is_prefilled(self):
+        response = self.client.get(reverse("menu_item_edit", args=[self.menu_item.pk]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            reverse("menu_item_edit", args=[self.menu_item.pk]),
+            f"/menu-items/{self.menu_item.pk}/edit/",
+        )
+        self.assertContains(response, "Edit Menu Item")
+        self.assertContains(response, 'value="Jollof Rice"')
+        self.assertContains(response, "Party-style jollof rice")
+        self.assertTemplateUsed(response, "restaurants/menu_item_form.html")
+
+    def test_edit_menu_item_saves_changes_and_shows_success_message(self):
+        response = self.client.post(
+            reverse("menu_item_edit", args=[self.menu_item.pk]),
+            {
+                "category": self.category.pk,
+                "name": "Jollof Rice Deluxe",
+                "description": "Updated party-style jollof rice",
+                "price": "3000.00",
+                "is_available": "on",
+                "image_url": "",
+            },
+            follow=True,
+        )
+
+        self.menu_item.refresh_from_db()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.menu_item.name, "Jollof Rice Deluxe")
+        self.assertEqual(str(self.menu_item.price), "3000.00")
+        self.assertContains(response, "Jollof Rice Deluxe was updated successfully.")
+
+    def test_delete_menu_item_confirmation_does_not_delete_on_get(self):
+        response = self.client.get(reverse("menu_item_delete", args=[self.menu_item.pk]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            reverse("menu_item_delete", args=[self.menu_item.pk]),
+            f"/menu-items/{self.menu_item.pk}/delete/",
+        )
+        self.assertTrue(MenuItem.objects.filter(pk=self.menu_item.pk).exists())
+        self.assertContains(response, "Delete menu item?")
+        self.assertContains(response, "csrfmiddlewaretoken")
+        self.assertTemplateUsed(response, "restaurants/confirm_delete.html")
+
+    def test_delete_menu_item_deletes_on_post_and_shows_success_message(self):
+        response = self.client.post(
+            reverse("menu_item_delete", args=[self.menu_item.pk]),
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(MenuItem.objects.filter(pk=self.menu_item.pk).exists())
+        self.assertContains(response, "Jollof Rice was deleted successfully.")
+
+
+class CategoryCrudTests(TestCase):
+    def setUp(self):
+        self.category = MenuCategory.objects.create(
+            name="Rice",
+            description="Rice meals",
+        )
+        self.menu_item = MenuItem.objects.create(
+            category=self.category,
+            name="Jollof Rice",
+            description="Party-style jollof rice",
+            price="2500.00",
+            is_available=True,
+        )
+
+    def test_category_detail_renders_category_and_menu_items(self):
+        response = self.client.get(reverse("category_detail", args=[self.category.pk]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Rice")
+        self.assertContains(response, "Jollof Rice")
+        self.assertTemplateUsed(response, "restaurants/category_detail.html")
+
+    def test_add_category_form_renders(self):
+        response = self.client.get(reverse("category_add"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Add Category")
+        self.assertContains(response, "csrfmiddlewaretoken")
+        self.assertTemplateUsed(response, "restaurants/category_form.html")
+
+    def test_add_category_creates_category_and_shows_success_message(self):
+        response = self.client.post(
+            reverse("category_add"),
+            {
+                "name": "Desserts",
+                "description": "Sweet treats",
+            },
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(MenuCategory.objects.filter(name="Desserts").exists())
+        self.assertContains(response, "Desserts was created successfully.")
+
+    def test_add_category_validates_required_name(self):
+        response = self.client.post(
+            reverse("category_add"),
+            {
+                "name": "",
+                "description": "Missing name",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(MenuCategory.objects.filter(description="Missing name").exists())
+        self.assertContains(response, "This field is required.")
+
+    def test_edit_category_form_is_prefilled(self):
+        response = self.client.get(reverse("category_edit", args=[self.category.pk]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Edit Category")
+        self.assertContains(response, 'value="Rice"')
+        self.assertContains(response, "Rice meals")
+        self.assertTemplateUsed(response, "restaurants/category_form.html")
+
+    def test_edit_category_saves_changes_and_shows_success_message(self):
+        response = self.client.post(
+            reverse("category_edit", args=[self.category.pk]),
+            {
+                "name": "Main Rice",
+                "description": "Updated rice meals",
+            },
+            follow=True,
+        )
+
+        self.category.refresh_from_db()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.category.name, "Main Rice")
+        self.assertEqual(self.category.description, "Updated rice meals")
+        self.assertContains(response, "Main Rice was updated successfully.")
+
+    def test_delete_category_confirmation_does_not_delete_on_get(self):
+        response = self.client.get(reverse("category_delete", args=[self.category.pk]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(MenuCategory.objects.filter(pk=self.category.pk).exists())
+        self.assertContains(response, "Delete category?")
+        self.assertContains(response, "csrfmiddlewaretoken")
+        self.assertTemplateUsed(response, "restaurants/confirm_delete.html")
+
+    def test_delete_category_deletes_on_post_and_shows_success_message(self):
+        response = self.client.post(
+            reverse("category_delete", args=[self.category.pk]),
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(MenuCategory.objects.filter(pk=self.category.pk).exists())
+        self.assertFalse(MenuItem.objects.filter(pk=self.menu_item.pk).exists())
+        self.assertContains(response, "Rice was deleted successfully.")
 
 
 class CartViewTests(TestCase):
