@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}My Orders | HappyMeal{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex flex-column flex-md-row align-items-md-end justify-content-between">
+    <div>
+        <p class="section-kicker mb-2">Order history</p>
+        <h1 class="display-6 fw-bold mb-2">My Orders</h1>
+        <p class="text-muted mb-0">Track your previous and current HappyMeal orders.</p>
+    </div>
+    <a class="btn btn-outline-secondary" href="{% url 'menu_list' %}">Order Again</a>
+</div>
+
+{% if orders %}
+    <div class="content-panel p-4 p-md-5">
+        <div class="list-group list-group-flush">
+            {% for order in orders %}
+                <a class="list-group-item list-group-item-action d-flex flex-column flex-md-row justify-content-between gap-3" href="{% url 'order_detail' order.pk %}">
+                    <span>
+                        <strong>Order #{{ order.pk }}</strong>
+                        <span class="text-muted d-block">{{ order.created_at|date:"M j, Y g:i A" }}</span>
+                    </span>
+                    <span class="d-flex flex-column align-items-md-end gap-1">
+                        <span class="badge text-bg-success">{{ order.get_status_display }}</span>
+                        <strong class="price-tag">NGN {{ order.total_price }}</strong>
+                    </span>
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+{% else %}
+    <div class="content-panel p-4 p-md-5 text-center">
+        <p class="section-kicker mb-2">No orders yet</p>
+        <h2 class="h3 mb-3">Your order history is empty.</h2>
+        <p class="text-muted mb-4">When you place an order, it will appear here for tracking.</p>
+        <a class="btn btn-cart" href="{% url 'menu_list' %}">Browse Menu</a>
+    </div>
+{% endif %}
+{% endblock %}

@@ -10,7 +10,9 @@
         <p class="menu-page-lede mb-0">Move through the menu by starters, mains, grills, drinks, and seasonal additions.</p>
     </div>
     <div class="menu-page-actions">
-        <a class="btn btn-primary" href="{% url 'category_add' %}">Add Category</a>
+        {% if request.user.is_staff %}
+            <a class="btn btn-primary" href="{% url 'category_add' %}">Add Category</a>
+        {% endif %}
         <a class="btn btn-outline-primary" href="{% url 'menu_list' %}">View Menu</a>
     </div>
 </section>
@@ -36,8 +38,10 @@
                     <span class="category-items-label">{{ category.menu_item_count }} menu item{{ category.menu_item_count|pluralize }}</span>
                     <div class="d-flex flex-wrap gap-2">
                         <a class="btn btn-sm btn-primary" href="{% url 'category_detail' category.pk %}">View</a>
-                        <a class="btn btn-sm btn-outline-secondary" href="{% url 'category_edit' category.pk %}">Edit</a>
-                        <a class="btn btn-sm btn-outline-secondary" href="{% url 'category_delete' category.pk %}">Delete</a>
+                        {% if request.user.is_staff %}
+                            <a class="btn btn-sm btn-outline-secondary" href="{% url 'category_edit' category.pk %}">Edit</a>
+                            <a class="btn btn-sm btn-outline-secondary" href="{% url 'category_delete' category.pk %}">Delete</a>
+                        {% endif %}
                     </div>
                 </div>
             </article>

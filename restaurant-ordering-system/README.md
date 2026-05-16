@@ -1,87 +1,47 @@
-# ToriloShop Restaurant Ordering System
+# HappyMeal Restaurant Ordering System
 
-ToriloShop is a Django-based restaurant ordering system that allows users to browse menu items, view categories, and manage menu data through full Create, Read, Update, and Delete operations.
+HappyMeal is a Django restaurant ordering system for browsing meals, managing menu content, placing customer orders, and tracking order status from a staff dashboard.
 
-The project now supports complete CRUD for:
+The project includes a public restaurant website, customer authentication, protected cart and checkout flows, menu/category management, customer order history, and staff-only administrative tools.
 
-- Menu items, represented by the `MenuItem` model
-- Categories, represented by the `MenuCategory` model
+## Features
 
-Users can create new menu items and categories, view existing records, edit saved records through pre-filled forms, and delete records only after confirming the action.
+### Customer Features
 
-Menu items also support stock tracking and image uploads. Uploaded images are served from the local `media/` directory during development and are displayed as thumbnails on list pages and larger images on detail pages.
+- Browse the restaurant menu and categories.
+- View menu item details, stock status, prices, and images.
+- Register, login, logout, and reset passwords.
+- Add items to cart only after logging in.
+- Checkout with delivery address, phone number, email, and notes.
+- View personal order history from `My Orders`.
+- View order details and order status.
 
-## Project Description
+### Staff/Admin Features
 
-ToriloShop now includes full menu item and category management for a restaurant menu.
+- Staff-only dashboard at `/dashboard/`.
+- Dashboard separates customers, admins, and superusers.
+- Dashboard shows menu counts, active orders, delivered orders, and recent orders.
+- Staff can update order status directly from the dashboard.
+- Staff-only menu item and category create, edit, and delete views.
+- Django admin support for menu items, categories, customers, orders, and order items.
 
-Menu item CRUD allows the system to:
+### Menu And Cart Features
 
-- Create a new menu item from `/menu-items/add/`
-- Read menu items from `/menu-items/` and individual menu item details from `/menu-items/<id>/`
-- Update an existing menu item from `/menu-items/<id>/edit/`
-- Delete a menu item from `/menu-items/<id>/delete/` after confirmation
+- Menu item CRUD with image upload.
+- Category CRUD with item counts.
+- Stock-aware cart.
+- Out-of-stock items cannot be added to cart.
+- Cart quantities are capped by available stock.
+- Checkout reduces menu item stock after an order is placed.
 
-Category CRUD allows the system to:
+## User Roles
 
-- Create a new category from `/categories/add/`
-- Read categories from `/categories/` and individual category details from `/categories/<id>/`
-- Update an existing category from `/categories/<id>/edit/`
-- Delete a category from `/categories/<id>/delete/` after confirmation
-
-All create, edit, and delete actions show success flash messages after completion. Delete actions are protected so records are removed only when the confirmation form is submitted with `POST`.
-
-## Features Implemented
-
-### Menu Item Features
-
-| Feature | URL | Description |
-| --- | --- | --- |
-| Menu Item List | `/menu-items/` | Displays all menu items. |
-| Menu Item Detail | `/menu-items/<id>/` | Displays the full details for one menu item. |
-| Add Menu Item Form | `/menu-items/add/` | Creates a new menu item with category, name, description, price, stock, availability, and uploaded image fields. |
-| Edit Menu Item Form | `/menu-items/<id>/edit/` | Shows a pre-filled form for an existing menu item and saves updated values, including stock and image changes. |
-| Delete Menu Item Confirmation | `/menu-items/<id>/delete/` | Shows a confirmation page. The menu item is deleted only after submitting the POST form. |
-
-### Image And Stock Features
-
-| Feature | Description |
+| Role | Access |
 | --- | --- |
-| Menu item image upload | Uses Django `ImageField` to upload images into `media/menu_items/`. |
-| List page thumbnail | Shows a thumbnail image for each menu item on the menu list page. |
-| Detail page image | Shows a larger image for the selected menu item on the detail page. |
-| Seeded local images | The original menu image URLs were downloaded into `media/menu_items/` and are now used through `ImageField`. |
-| Stock field | Tracks how many units are available for each menu item. |
-| Stock-aware cart | Prevents out-of-stock menu items from being added and caps cart quantities by available stock. |
-
-### Category Features
-
-| Feature | URL | Description |
-| --- | --- | --- |
-| Category List | `/categories/` | Displays all categories and their menu item counts. |
-| Category Detail | `/categories/<id>/` | Displays one category and the menu items inside it. |
-| Add Category Form | `/categories/add/` | Creates a new category with name and description fields. |
-| Edit Category Form | `/categories/<id>/edit/` | Shows a pre-filled form for an existing category and saves updated values. |
-| Delete Category Confirmation | `/categories/<id>/delete/` | Shows a confirmation page. The category is deleted only after submitting the POST form. |
-
-### Styling Features
-
-- Custom restaurant-style CSS is loaded from `restaurants/static/restaurants/css/style.css`.
-- The menu page uses image-led cards, category chips, stock badges, and polished ordering actions.
-- The categories page uses styled restaurant section cards with item counts and clear management actions.
-- The footer includes brand details, quick links, visit information, opening hours, and a cart link.
-
-## Validation And Security
-
-- All forms use Django `ModelForm` validation.
-- Required fields are validated before saving.
-- Menu item price must be at least `0.01`.
-- Available menu items must have stock above `0`.
-- Duplicate menu item names are blocked within the same category.
-- Category names must be unique.
-- Every create, edit, and delete form includes `{% csrf_token %}`.
-- Delete pages use confirmation forms and only delete records on `POST`.
-- Success messages are displayed after create, update, and delete actions.
+| Guest | Can browse public pages and menu. Cannot add to cart or place orders. |
+| Customer | Can add to cart, checkout, and view their own orders. |
+| Staff/Admin | Can manage menu/category content, view dashboard, and update orders. |
+| Superuser | Has staff access plus Django admin superuser permissions. |
 
 ## Tech Stack
 
@@ -91,15 +51,6 @@ All create, edit, and delete actions show success flash messages after completio
 - Django Templates
 - Bootstrap
 - Pillow
-
-## Admin Features
-
-The Django admin includes custom menu item management:
-
-- `list_display` shows name, price, category, stock, and availability.
-- `search_fields` supports searching by menu item name and category name.
-- `list_filter` supports filtering by category and availability.
-- A custom admin action, `Mark as out of stock`, sets `stock=0` and `is_available=False`.
 
 ## Project Structure
 
@@ -111,36 +62,107 @@ restaurant-ordering-system/
 |   |-- asgi.py
 |   `-- wsgi.py
 |-- restaurants/
+|   |-- admin.py
+|   |-- context_processors.py
 |   |-- forms.py
 |   |-- models.py
+|   |-- tests.py
 |   |-- urls.py
 |   |-- views.py
-|   |-- tests.py
 |   |-- migrations/
 |   |-- static/
-|   |   `-- restaurants/
-|   |       `-- css/
-|   |           `-- style.css
+|   |   `-- restaurants/css/style.css
 |   `-- templates/
 |       |-- base.html
+|       |-- registration/
 |       `-- restaurants/
-|           |-- category_detail.html
-|           |-- category_form.html
-|           |-- category_list.html
-|           |-- confirm_delete.html
-|           |-- menu_detail.html
-|           |-- menu_list.html
-|           `-- menu_item_form.html
 |-- orders/
-|-- db.sqlite3
+|   |-- admin.py
+|   |-- forms.py
+|   |-- models.py
+|   |-- tests.py
+|   |-- urls.py
+|   |-- views.py
+|   |-- migrations/
+|   `-- templates/orders/
 |-- media/
+|   `-- menu_items/
+|-- db.sqlite3
 |-- manage.py
 `-- README.md
 ```
 
-## Setup Instructions
+## Main Apps
 
-Follow these steps to run the project locally.
+### `restaurants`
+
+Handles the public website, menu items, categories, cart session behavior, registration, dashboard, and shared templates.
+
+Main models:
+
+- `MenuCategory`
+- `MenuItem`
+
+### `orders`
+
+Handles checkout, customer profiles, order records, order items, order history, and staff order status updates.
+
+Main models:
+
+- `Customer`
+- `Order`
+- `OrderItem`
+
+## Important Routes
+
+### Public Pages
+
+| URL | Purpose |
+| --- | --- |
+| `/` | Home page |
+| `/about/` | About and FAQ page |
+| `/menu_list/` | Menu listing |
+| `/menu/<id>/` | Public menu item detail |
+| `/categories/` | Category listing |
+| `/categories/<id>/` | Category detail |
+
+### Authentication
+
+| URL | Purpose |
+| --- | --- |
+| `/accounts/register/` | Customer registration |
+| `/accounts/login/` | Login |
+| `/accounts/logout/` | Logout |
+| `/accounts/password-reset/` | Password reset request |
+| `/accounts/reset/<uidb64>/<token>/` | Password reset confirmation |
+
+### Cart And Orders
+
+| URL | Purpose |
+| --- | --- |
+| `/cart/` | Customer cart, login required |
+| `/cart/add/<id>/` | Add item to cart, login required |
+| `/cart/update/<id>/` | Update cart quantity, login required |
+| `/cart/remove/<id>/` | Remove item from cart, login required |
+| `/checkout/` | Place an order, login required |
+| `/orders/` | Customer order history |
+| `/orders/<id>/` | Order detail |
+
+### Staff/Admin
+
+| URL | Purpose |
+| --- | --- |
+| `/dashboard/` | Staff dashboard |
+| `/dashboard/orders/<id>/status/` | Update order status |
+| `/menu-items/add/` | Add menu item |
+| `/menu-items/<id>/edit/` | Edit menu item |
+| `/menu-items/<id>/delete/` | Delete menu item |
+| `/categories/add/` | Add category |
+| `/categories/<id>/edit/` | Edit category |
+| `/categories/<id>/delete/` | Delete category |
+| `/admin/` | Django admin |
+
+## Setup
 
 ### 1. Open the project folder
 
@@ -148,34 +170,36 @@ Follow these steps to run the project locally.
 cd C:\Users\ogbon\OneDrive\Desktop\dune-cohort-final-project\restaurant-ordering-system
 ```
 
-### 2. Create a virtual environment
+### 2. Create and activate a virtual environment
 
 ```powershell
 python -m venv venv
-```
-
-If `python` does not work on your machine, try:
-
-```powershell
-py -m venv venv
-```
-
-### 3. Activate the virtual environment
-
-```powershell
 .\venv\Scripts\activate
 ```
 
-### 4. Install dependencies
+If `python` is not available, try:
+
+```powershell
+py -m venv venv
+.\venv\Scripts\activate
+```
+
+### 3. Install dependencies
 
 ```powershell
 pip install django Pillow
 ```
 
-### 5. Apply database migrations
+### 4. Apply migrations
 
 ```powershell
 python manage.py migrate
+```
+
+### 5. Create a superuser
+
+```powershell
+python manage.py createsuperuser
 ```
 
 ### 6. Run the development server
@@ -184,7 +208,7 @@ python manage.py migrate
 python manage.py runserver
 ```
 
-Open the project in your browser:
+Open:
 
 ```text
 http://127.0.0.1:8000/
@@ -204,37 +228,53 @@ Run Django system checks:
 python manage.py check
 ```
 
-Create a superuser for the admin dashboard:
+Create migrations:
 
 ```powershell
-python manage.py createsuperuser
+python manage.py makemigrations
 ```
 
-Open the admin dashboard:
+Apply migrations:
 
-```text
-http://127.0.0.1:8000/admin/
+```powershell
+python manage.py migrate
 ```
 
-## Main Routes
+## Security And Permissions
 
-| URL | Purpose |
-| --- | --- |
-| `/` | Home page |
-| `/menu_list/` | Public menu list |
-| `/menu/<id>/` | Public menu item detail page |
-| `/menu-items/` | Menu item list |
-| `/menu-items/add/` | Add menu item |
-| `/menu-items/<id>/` | Menu item detail |
-| `/menu-items/<id>/edit/` | Edit menu item |
-| `/menu-items/<id>/delete/` | Delete menu item confirmation |
-| `/categories/` | Category list |
-| `/categories/add/` | Add category |
-| `/categories/<id>/` | Category detail |
-| `/categories/<id>/edit/` | Edit category |
-| `/categories/<id>/delete/` | Delete category confirmation |
-| `/cart/` | Cart page |
+- Guests can browse, but cannot add to cart or checkout.
+- Customers must login before ordering.
+- Customers can only view their own orders.
+- Staff users can manage menu/category content.
+- Staff users can view the dashboard and update order statuses.
+- Delete actions use confirmation pages and require `POST`.
+- Forms include CSRF protection.
+- Password reset uses Django's email reset flow with console email backend in development.
 
-## Summary
+## Testing
 
-ToriloShop now has a complete CRUD workflow for managing menu items and categories. The implementation includes validated forms, stock tracking, uploaded menu item images, custom restaurant styling, a polished menu page, styled category cards, an upgraded footer, media serving during development, admin search/filter/action support, pre-filled edit pages, safe delete confirmation pages, CSRF protection, success flash messages, and automated tests for the main behavior.
+The project includes tests for:
+
+- Public page rendering
+- Authentication and registration
+- Password reset email flow
+- Staff dashboard access
+- Menu item CRUD
+- Category CRUD
+- Cart login protection and stock behavior
+- Checkout and order creation
+- Customer order history
+- Staff order status updates
+
+Current verified test command:
+
+```powershell
+python manage.py test
+```
+
+## Notes
+
+- Uploaded menu item images are stored in `media/menu_items/`.
+- During development, media files are served through Django when `DEBUG = True`.
+- Password reset emails print to the console by default because the project uses Django's console email backend.
+- Before deployment, move `SECRET_KEY` to an environment variable, set `DEBUG = False`, and configure `ALLOWED_HOSTS`.

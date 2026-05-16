@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Order #{{ order.pk }} | HappyMeal{% endblock %}
+
+{% block content %}
+<a class="btn btn-link px-0 mb-3" href="{% if request.user.is_staff %}{% url 'dashboard' %}{% else %}{% url 'order_history' %}{% endif %}">&larr; Back</a>
+
+<div class="page-header d-flex flex-column flex-md-row align-items-md-end justify-content-between">
+    <div>
+        <p class="section-kicker mb-2">Order details</p>
+        <h1 class="display-6 fw-bold mb-2">Order #{{ order.pk }}</h1>
+        <p class="text-muted mb-0">Placed on {{ order.created_at|date:"M j, Y g:i A" }}</p>
+    </div>
+    <span class="badge text-bg-success">{{ order.get_status_display }}</span>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <section class="content-panel p-4 p-md-5">
+            <p class="section-kicker mb-2">Items</p>
+            <div class="list-group list-group-flush">
+                {% for item in order.items.all %}
+                    <div class="list-group-item d-flex flex-column flex-md-row justify-content-between gap-3 px-0">
+                        <span>
+                            <strong>{{ item.menu_item.name }}</strong>
+                            <span class="text-muted d-block">Qty {{ item.quantity }} at NGN {{ item.unit_price }}</span>
+                        </span>
+                        <strong class="price-tag">NGN {{ item.line_total }}</strong>
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="d-flex justify-content-between align-items-center border-top pt-3 mt-3">
+                <span class="text-muted">Total</span>
+                <strong class="price-tag">NGN {{ order.total_price }}</strong>
+            </div>
+        </section>
+    </div>
+
+    <div class="col-lg-5">
+        <section class="content-panel p-4 p-md-5">
+            <p class="section-kicker mb-2">Delivery</p>
+            <dl class="detail-list mb-0">
+                <dt>Customer</dt>
+                <dd>{{ order.customer.full_name }}</dd>
+
+                <dt>Phone</dt>
+                <dd>{{ order.customer.phone_number }}</dd>
+
+                <dt>Email</dt>
+                <dd>{{ order.customer.email|default:"Not provided" }}</dd>
+
+                <dt>Address</dt>
+                <dd>{{ order.delivery_address }}</dd>
+
+                {% if order.notes %}
+                    <dt>Notes</dt>
+                    <dd>{{ order.notes }}</dd>
+                {% endif %}
+            </dl>
+        </section>
+    </div>
+</div>
+{% endblock %}

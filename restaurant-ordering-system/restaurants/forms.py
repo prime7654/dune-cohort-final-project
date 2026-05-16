@@ -1,8 +1,14 @@
 from decimal import Decimal
 
 from django import forms
+from django.contrib.auth import get_user_model
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.password_validation import validate_password
+from django.utils.text import slugify
 
 from .models import MenuCategory, MenuItem
+
+User = get_user_model()
 
 
 def _apply_bootstrap_classes(form):
@@ -107,3 +113,84 @@ class MenuItemForm(forms.ModelForm):
             )
 
         return cleaned_data
+
+
+class RegistrationForm(forms.Form):
+    name = forms.CharField(max_length=150)
+    email = forms.EmailField()
+    password = forms.CharField(widget=forms.PasswordInput)
+    password_confirm = forms.CharField(widget=forms.PasswordInput)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        _apply_bootstrap_classes(self)
+
+    def clean_name(self):
+        name = self.cleaned_data["name"].strip()
+        if not name:
+            raise forms.ValidationError("Name is required.")
+        return name
+
+    def clean_email(self):
+        email = self.cleaned_data["email"].strip().lower()
+        if User.objects.filter(email__iexact=email).exists():
+            raise forms.ValidationError("An account with this email already exists.")
+        return email
+
+    def clean_password(self):
+        password = self.cleaned_data["password"]
+        validate_password(password)
+        return password
+
+    def clean(self):
+        cleaned_data = super().clean()
+        password = cleaned_data.get("password")
+        password_confirm = cleaned_data.get("password_confirm")
+
+        if password and password_confirm and password != password_confirm:
+            self.add_error("password_confirm", "Passwords do not match.")
+
+        return cleaned_data
+
+    def _unique_username(self):
+        name = self.cleaned_data["name"]
+        email = self.cleaned_data["email"]
+        base_username = slugify(name) or email.split("@", 1)[0] or "user"
+        base_username = base_username[:150]
+        username = base_username
+        counter = 1
+
+        while User.objects.filter(username=username).exists():
+            suffix = f"-{counter}"
+            username = f"{base_username[:150 - len(suffix)]}{suffix}"
+            counter += 1
+
+        return username
+
+    def save(self):
+        user = User(
+            username=self._unique_username(),
+            email=self.cleaned_data["email"],
+            first_name=self.cleaned_data["name"][:150],
+        )
+        user.set_password(self.cleaned_data["password"])
+        user.save()
+        return user
+
+
+class EmailOrUsernameAuthenticationForm(AuthenticationForm):
+    username = forms.CharField(label="Username or email")
+
+    def __init__(self, request=None, *args, **kwargs):
+        super().__init__(request, *args, **kwargs)
+        _apply_bootstrap_classes(self)
+
+    def clean(self):
+        username = self.cleaned_data.get("username")
+
+        if username and "@" in username:
+            matching_user = User.objects.filter(email__iexact=username).first()
+            if matching_user:
+                self.cleaned_data["username"] = matching_user.get_username()
+
+        return super().clean()

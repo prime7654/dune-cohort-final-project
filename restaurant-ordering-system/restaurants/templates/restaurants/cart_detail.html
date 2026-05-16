@@ -66,8 +66,8 @@
                     <span class="text-muted">Subtotal</span>
                     <strong class="price-tag">NGN {{ subtotal }}</strong>
                 </div>
-                <a class="btn btn-cart w-100 mb-2" href="{% url 'menu_list' %}">Continue Ordering</a>
-                <p class="text-muted small mb-0">Checkout can be connected when the order form is ready.</p>
+                <a class="btn btn-cart w-100 mb-2" href="{% url 'checkout' %}">Checkout</a>
+                <a class="btn btn-outline-secondary w-100" href="{% url 'menu_list' %}">Continue Ordering</a>
             </aside>
         </div>
     </div>

@@ -1,10 +1,18 @@
 from decimal import Decimal
 
+from django.conf import settings
 from django.db import models
 from restaurants.models import MenuItem
 
 
 class Customer(models.Model):
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+        related_name="customer_profile",
+    )
     full_name = models.CharField(max_length=150)
     phone_number = models.CharField(max_length=20)
     email = models.EmailField(blank=True)

@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Checkout | HappyMeal{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex flex-column flex-md-row align-items-md-end justify-content-between">
+    <div>
+        <p class="section-kicker mb-2">Checkout</p>
+        <h1 class="display-6 fw-bold mb-2">Place your order</h1>
+        <p class="text-muted mb-0">Confirm your delivery details before sending the order to the kitchen.</p>
+    </div>
+    <a class="btn btn-outline-secondary" href="{% url 'cart_detail' %}">Back to Cart</a>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <section class="content-panel p-4 p-md-5">
+            <form method="post" novalidate>
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger" role="alert">
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold" for="{{ form.full_name.id_for_label }}">Full Name</label>
+                        {{ form.full_name }}
+                        {% for error in form.full_name.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold" for="{{ form.phone_number.id_for_label }}">Phone Number</label>
+                        {{ form.phone_number }}
+                        {% for error in form.phone_number.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label fw-semibold" for="{{ form.email.id_for_label }}">Email</label>
+                        {{ form.email }}
+                        {% for error in form.email.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label fw-semibold" for="{{ form.delivery_address.id_for_label }}">Delivery Address</label>
+                        {{ form.delivery_address }}
+                        {% for error in form.delivery_address.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label fw-semibold" for="{{ form.notes.id_for_label }}">Order Notes</label>
+                        {{ form.notes }}
+                        {% for error in form.notes.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="d-flex flex-wrap gap-2 mt-4">
+                    <button class="btn btn-primary" type="submit">Place Order</button>
+                    <a class="btn btn-outline-secondary" href="{% url 'cart_detail' %}">Review Cart</a>
+                </div>
+            </form>
+        </section>
+    </div>
+
+    <div class="col-lg-5">
+        <aside class="content-panel p-4 sticky-lg-top" style="top: 6rem;">
+            <p class="section-kicker mb-2">Order summary</p>
+            <div class="list-group list-group-flush mb-3">
+                {% for cart_item in cart_items %}
+                    <div class="list-group-item d-flex justify-content-between gap-3 px-0">
+                        <span>
+                            <strong>{{ cart_item.menu_item.name }}</strong>
+                            <span class="text-muted d-block">Qty {{ cart_item.quantity }}</span>
+                        </span>
+                        <strong>NGN {{ cart_item.line_total }}</strong>
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="text-muted">Subtotal</span>
+                <strong class="price-tag">NGN {{ subtotal }}</strong>
+            </div>
+        </aside>
+    </div>
+</div>
+{% endblock %}

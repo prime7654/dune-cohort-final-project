@@ -55,13 +55,32 @@
         }
 
         .navbar-dark .navbar-nav .nav-link {
+            position: relative;
             color: rgba(255, 255, 255, 0.78);
             font-weight: 600;
+        }
+
+        .navbar-dark .navbar-nav .nav-link::after {
+            position: absolute;
+            right: 0.5rem;
+            bottom: 0.25rem;
+            left: 0.5rem;
+            height: 2px;
+            content: "";
+            background: var(--hm-gold);
+            transform: scaleX(0);
+            transform-origin: center;
+            transition: transform 160ms ease;
         }
 
         .navbar-dark .navbar-nav .nav-link:hover,
         .navbar-dark .navbar-nav .nav-link.active {
             color: #ffffff;
+        }
+
+        .navbar-dark .navbar-nav .nav-link:hover::after,
+        .navbar-dark .navbar-nav .nav-link:focus::after {
+            transform: scaleX(1);
         }
 
         .btn {
@@ -378,7 +397,7 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="mainNavbar">
-                <ul class="navbar-nav ms-auto">
+                <ul class="navbar-nav ms-auto align-items-lg-center">
                     <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'home' %}">Home</a>
                     </li>
@@ -394,6 +413,32 @@
                             <span class="cart-pill">{{ cart_item_count }}</span>
                         </a>
                     </li>
+                    {% if request.user.is_staff %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}">Dashboard</a>
+                        </li>
+                    {% endif %}
+                    {% if request.user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'order_history' or request.resolver_match.url_name == 'order_detail' %}active{% endif %}" href="{% url 'order_history' %}">My Orders</a>
+                        </li>
+                        <li class="nav-item">
+                            <span class="navbar-text text-white-50 px-lg-2">Hi, {{ request.user.username }}</span>
+                        </li>
+                        <li class="nav-item">
+                            <form method="post" action="{% url 'logout' %}" class="d-inline">
+                                {% csrf_token %}
+                                <button class="btn btn-sm btn-cart ms-lg-2" type="submit">Logout</button>
+                            </form>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'login' %}active{% endif %}" href="{% url 'login' %}">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'register' %}active{% endif %}" href="{% url 'register' %}">Register</a>
+                        </li>
+                    {% endif %}
                 </ul>
             </div>
         </div>

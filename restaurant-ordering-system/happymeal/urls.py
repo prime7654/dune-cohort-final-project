@@ -17,11 +17,63 @@ Including another URLconf
 from django.contrib import admin
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib.auth.views import (
+    LoginView,
+    LogoutView,
+    PasswordResetCompleteView,
+    PasswordResetConfirmView,
+    PasswordResetDoneView,
+    PasswordResetView,
+)
 from django.urls import include, path
+from restaurants.forms import EmailOrUsernameAuthenticationForm
 from restaurants import views as restaurant_views
 
 urlpatterns = [
     path('', include('restaurants.urls')),
+    path('', include('orders.urls')),
+    path(
+        'accounts/login/',
+        LoginView.as_view(
+            authentication_form=EmailOrUsernameAuthenticationForm,
+            template_name='registration/login.html',
+        ),
+        name='login',
+    ),
+    path(
+        'accounts/logout/',
+        LogoutView.as_view(next_page='home'),
+        name='logout',
+    ),
+    path('accounts/register/', restaurant_views.register, name='register'),
+    path(
+        'accounts/password-reset/',
+        PasswordResetView.as_view(
+            email_template_name='registration/account_password_reset_email.html',
+            subject_template_name='registration/account_password_reset_subject.txt',
+            template_name='registration/account_password_reset_form.html',
+            success_url='/accounts/password-reset/done/',
+        ),
+        name='password_reset',
+    ),
+    path(
+        'accounts/password-reset/done/',
+        PasswordResetDoneView.as_view(template_name='registration/account_password_reset_done.html'),
+        name='password_reset_done',
+    ),
+    path(
+        'accounts/reset/<uidb64>/<token>/',
+        PasswordResetConfirmView.as_view(
+            template_name='registration/account_password_reset_confirm.html',
+            success_url='/accounts/reset/done/',
+        ),
+        name='password_reset_confirm',
+    ),
+    path(
+        'accounts/reset/done/',
+        PasswordResetCompleteView.as_view(template_name='registration/account_password_reset_complete.html'),
+        name='password_reset_complete',
+    ),
     path('admin/', admin.site.urls),
 ]
 

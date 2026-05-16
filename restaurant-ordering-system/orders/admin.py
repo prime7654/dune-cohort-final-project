@@ -10,8 +10,8 @@ class OrderItemInline(admin.TabularInline):
 
 @admin.register(Customer)
 class CustomerAdmin(admin.ModelAdmin):
-    list_display = ("full_name", "phone_number", "email", "created_at")
-    search_fields = ("full_name", "phone_number", "email")
+    list_display = ("full_name", "user", "phone_number", "email", "created_at")
+    search_fields = ("full_name", "phone_number", "email", "user__username")
 
 
 @admin.register(Order)

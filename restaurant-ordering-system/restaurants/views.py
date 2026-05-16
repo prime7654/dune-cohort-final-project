@@ -1,16 +1,38 @@
 from decimal import Decimal
-
+from functools import wraps
 from django.contrib import messages
+from django.contrib.auth import login
+from django.contrib.auth import get_user_model
+from django.contrib.auth.decorators import login_required
 from django.db.models import Count
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
+from orders.models import Order
 
-from .forms import MenuCategoryForm, MenuItemForm
+from .forms import MenuCategoryForm, MenuItemForm, RegistrationForm
 from .models import MenuCategory, MenuItem
 
 CART_SESSION_KEY = "cart"
 MAX_CART_QUANTITY = 20
+
+
+def staff_required(view_func=None, *, message="Only staff users can add, edit, or delete menu content."):
+    def decorator(func):
+        @wraps(func)
+        @login_required
+        def wrapper(request, *args, **kwargs):
+            if not request.user.is_staff:
+                messages.error(request, message)
+                return redirect("menu_list")
+            return func(request, *args, **kwargs)
+
+        return wrapper
+
+    if view_func is None:
+        return decorator
+
+    return decorator(view_func)
 
 
 def _get_cart(request):
@@ -44,6 +66,61 @@ def home(request):
     return render(request, "restaurants/home.html")
 
 
+def register(request):
+    if request.user.is_authenticated:
+        return redirect("home")
+
+    if request.method == "POST":
+        form = RegistrationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            messages.success(request, "Your account was created successfully.")
+            return redirect("home")
+    else:
+        form = RegistrationForm()
+
+    return render(request, "registration/register.html", {"form": form})
+
+
+@staff_required(message="Only staff users can view the dashboard.")
+def dashboard(request):
+    User = get_user_model()
+    role_label = "Super Admin" if request.user.is_superuser else "Admin"
+    total_menu_items = MenuItem.objects.count()
+    available_menu_items = MenuItem.objects.filter(is_available=True, stock__gt=0).count()
+    out_of_stock_items = MenuItem.objects.filter(stock=0).count()
+    active_statuses = [
+        Order.Status.PENDING,
+        Order.Status.CONFIRMED,
+        Order.Status.PREPARING,
+        Order.Status.READY,
+    ]
+
+    context = {
+        "role_label": role_label,
+        "total_menu_items": total_menu_items,
+        "available_menu_items": available_menu_items,
+        "out_of_stock_items": out_of_stock_items,
+        "total_categories": MenuCategory.objects.count(),
+        "total_users": User.objects.count(),
+        "admin_users": User.objects.filter(is_staff=True).count(),
+        "customer_users": User.objects.filter(is_staff=False).count(),
+        "superusers": User.objects.filter(is_superuser=True).count(),
+        "recent_menu_items": MenuItem.objects.select_related("category").order_by("-created_at")[:5],
+        "total_orders": Order.objects.count(),
+        "active_orders": Order.objects.filter(status__in=active_statuses).count(),
+        "delivered_orders": Order.objects.filter(status=Order.Status.DELIVERED).count(),
+        "recent_orders": (
+            Order.objects.select_related("customer")
+            .prefetch_related("items__menu_item")
+            .order_by("-created_at")[:8]
+        ),
+        "order_status_choices": Order.Status.choices,
+    }
+    return render(request, "restaurants/dashboard.html", context)
+
+
 def menu_list(request):
     menu_items = MenuItem.objects.select_related("category").all()
     return render(
@@ -73,6 +150,7 @@ def menu_item_detail(request, pk):
     return menu_detail(request, pk)
 
 
+@staff_required
 def menu_item_create(request):
     if request.method == "POST":
         form = MenuItemForm(request.POST, request.FILES)
@@ -94,6 +172,7 @@ def menu_item_create(request):
     )
 
 
+@staff_required
 def menu_item_update(request, pk):
     menu_item = get_object_or_404(MenuItem.objects.select_related("category"), pk=pk)
 
@@ -118,6 +197,7 @@ def menu_item_update(request, pk):
     )
 
 
+@staff_required
 def menu_item_delete(request, pk):
     menu_item = get_object_or_404(MenuItem, pk=pk)
 
@@ -161,6 +241,7 @@ def category_detail(request, pk):
     )
 
 
+@staff_required
 def category_create(request):
     if request.method == "POST":
         form = MenuCategoryForm(request.POST)
@@ -182,6 +263,7 @@ def category_create(request):
     )
 
 
+@staff_required
 def category_update(request, pk):
     category = get_object_or_404(MenuCategory, pk=pk)
 
@@ -206,6 +288,7 @@ def category_update(request, pk):
     )
 
 
+@staff_required
 def category_delete(request, pk):
     category = get_object_or_404(MenuCategory, pk=pk)
 
@@ -230,6 +313,7 @@ def about(request):
     return render(request, "restaurants/about.html")
 
 
+@login_required
 def cart_detail(request):
     cart = request.session.get(CART_SESSION_KEY, {})
     menu_items = MenuItem.objects.select_related("category").filter(
@@ -265,6 +349,7 @@ def cart_detail(request):
     )
 
 
+@login_required
 def cart_add(request, pk):
     menu_item = get_object_or_404(MenuItem, pk=pk)
 
@@ -290,6 +375,7 @@ def cart_add(request, pk):
     return _redirect_after_cart_action(request)
 
 
+@login_required
 def cart_update(request, pk):
     menu_item = get_object_or_404(MenuItem, pk=pk)
 
@@ -317,6 +403,7 @@ def cart_update(request, pk):
     return redirect("cart_detail")
 
 
+@login_required
 def cart_remove(request, pk):
     menu_item = get_object_or_404(MenuItem, pk=pk)
 
