@@ -3,6 +3,17 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+    path("api/menu-items/", views.MenuItemListCreateAPIView.as_view(), name="api_menu_item_list"),
+    path(
+        "api/menu-items/<int:pk>/",
+        views.MenuItemDetailAPIView.as_view(),
+        name="api_menu_item_detail",
+    ),
+    path(
+        "api/menu-categories/",
+        views.MenuCategoryListAPIView.as_view(),
+        name="api_menu_category_list",
+    ),
     path("", views.home, name="home"),
     path("dashboard/", views.dashboard, name="dashboard"),
     path("menu_list/", views.menu_list, name="menu_list"),

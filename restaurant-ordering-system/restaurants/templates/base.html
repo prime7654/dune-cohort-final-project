@@ -23,13 +23,22 @@
         }
 
         body {
-            background: linear-gradient(180deg, #fffdf8 0%, #f4f6f0 52%, #fffdf8 100%);
+            min-height: 100vh;
+            background-color: #160f06;
+            background-image:
+                radial-gradient(circle at 50% 5rem, rgba(217, 155, 43, 0.22), transparent 32rem),
+                radial-gradient(circle at 10% 12rem, rgba(22, 56, 47, 0.44), transparent 26rem),
+                radial-gradient(circle at 92% 18rem, rgba(157, 47, 40, 0.16), transparent 28rem),
+                linear-gradient(180deg, #171900 0%, #2b1f03 42%, #181006 100%);
+            background-attachment: fixed;
             color: var(--hm-ink);
             font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         }
 
         .site-main {
             min-height: 72vh;
+            background:
+                linear-gradient(180deg, rgba(11, 20, 17, 0.18), rgba(43, 31, 3, 0.74) 34%, rgba(24, 16, 6, 0.92) 100%);
         }
 
         .navbar {
@@ -131,17 +140,48 @@
         }
 
         .page-header {
-            border-bottom: 1px solid var(--hm-line);
+            border-bottom: 1px solid rgba(255, 253, 248, 0.18);
+            color: #fffaf0;
             margin-bottom: 2rem;
             padding-bottom: 1.5rem;
         }
 
+        .page-header .text-muted,
+        .page-header p:not(.section-kicker) {
+            color: rgba(255, 253, 248, 0.72) !important;
+        }
+
+        .page-header .btn-outline-secondary,
+        .page-header .btn-outline-primary {
+            border-color: rgba(217, 155, 43, 0.78);
+            color: #fffaf0;
+        }
+
+        .page-header .btn-outline-secondary:hover,
+        .page-header .btn-outline-secondary:focus,
+        .page-header .btn-outline-primary:hover,
+        .page-header .btn-outline-primary:focus {
+            background: var(--hm-gold);
+            border-color: var(--hm-gold);
+            color: var(--hm-green);
+        }
+
         .section-kicker {
-            color: var(--hm-red);
+            color: #e0a23a;
             font-size: 0.78rem;
             font-weight: 800;
             letter-spacing: 0.12em;
             text-transform: uppercase;
+        }
+
+        .content-panel .section-kicker,
+        .menu-card .section-kicker,
+        .category-card .section-kicker,
+        .cart-line .section-kicker,
+        .about-faq .section-kicker,
+        .dashboard-role-card .section-kicker,
+        .dashboard-stat-card .section-kicker {
+            color: var(--hm-red);
         }
 
         .hero-section {
@@ -384,7 +424,7 @@
             }
         }
     </style>
-    <link href="{% static 'restaurants/css/style.css' %}" rel="stylesheet">
+    <link href="{% static 'restaurants/css/style.css' %}?v=3" rel="stylesheet">
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark sticky-top">

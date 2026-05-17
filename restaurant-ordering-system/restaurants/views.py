@@ -4,14 +4,16 @@ from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
-from django.db.models import Count
+from django.db.models import Count, Prefetch
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 from orders.models import Order
+from rest_framework import generics
 
 from .forms import MenuCategoryForm, MenuItemForm, RegistrationForm
 from .models import MenuCategory, MenuItem
+from .serializers import MenuCategorySerializer, MenuItemSerializer
 
 CART_SESSION_KEY = "cart"
 MAX_CART_QUANTITY = 20
@@ -60,6 +62,35 @@ def _redirect_after_cart_action(request):
     ):
         return redirect(next_url)
     return redirect("cart_detail")
+
+
+class MenuItemListCreateAPIView(generics.ListCreateAPIView):
+    serializer_class = MenuItemSerializer
+    http_method_names = ["get", "post", "head", "options"]
+
+    def get_queryset(self):
+        return MenuItem.objects.select_related("category").all()
+
+
+class MenuItemDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = MenuItemSerializer
+    http_method_names = ["get", "put", "delete", "head", "options"]
+
+    def get_queryset(self):
+        return MenuItem.objects.select_related("category").all()
+
+
+class MenuCategoryListAPIView(generics.ListAPIView):
+    serializer_class = MenuCategorySerializer
+    http_method_names = ["get", "head", "options"]
+
+    def get_queryset(self):
+        menu_item_queryset = MenuItem.objects.select_related("category")
+        return (
+            MenuCategory.objects.annotate(menu_item_count=Count("menu_items"))
+            .prefetch_related(Prefetch("menu_items", queryset=menu_item_queryset))
+            .all()
+        )
 
 
 def home(request):
