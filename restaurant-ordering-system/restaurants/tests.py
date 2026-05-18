@@ -2,6 +2,7 @@ from unittest.mock import patch
 
 from django.contrib.admin.sites import AdminSite
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from django.core import mail
 from django.test import TestCase, override_settings
 from django.urls import reverse
@@ -97,6 +98,9 @@ class MenuViewTests(TestCase):
 
 
 class AccountAuthTests(TestCase):
+    def setUp(self):
+        cache.clear()
+
     def test_login_page_uses_custom_template(self):
         response = self.client.get(reverse("login"))
 
@@ -179,6 +183,35 @@ class AccountAuthTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.context["user"].is_authenticated)
         self.assertEqual(response.context["user"].username, "ada-lovelace")
+
+    def test_login_locks_after_five_failed_attempts(self):
+        User.objects.create_user(
+            username="ada",
+            email="ada@example.com",
+            password="StrongPass123!",
+        )
+
+        for _ in range(4):
+            response = self.client.post(
+                reverse("login"),
+                {"username": "ada", "password": "WrongPass123!"},
+            )
+            self.assertEqual(response.status_code, 200)
+            self.assertContains(response, "Please enter a correct username and password.")
+
+        locked_response = self.client.post(
+            reverse("login"),
+            {"username": "ada", "password": "WrongPass123!"},
+        )
+        correct_password_response = self.client.post(
+            reverse("login"),
+            {"username": "ada", "password": "StrongPass123!"},
+        )
+
+        self.assertEqual(locked_response.status_code, 200)
+        self.assertContains(locked_response, "Too many failed sign-in attempts.")
+        self.assertEqual(correct_password_response.status_code, 200)
+        self.assertContains(correct_password_response, "Too many failed sign-in attempts.")
 
     def test_logout_redirects_to_home(self):
         user = User.objects.create_user(

@@ -8,11 +8,14 @@ from django.db.models import Count, Prefetch
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
+from django_filters.rest_framework import DjangoFilterBackend
 from orders.models import Order
-from rest_framework import generics
+from rest_framework import filters, generics, permissions
 
 from .forms import MenuCategoryForm, MenuItemForm, RegistrationForm
 from .models import MenuCategory, MenuItem
+from .pagination import MenuItemPagination
+from .permissions import IsMenuItemCreatorOrReadOnly
 from .serializers import MenuCategorySerializer, MenuItemSerializer
 
 CART_SESSION_KEY = "cart"
@@ -66,18 +69,32 @@ def _redirect_after_cart_action(request):
 
 class MenuItemListCreateAPIView(generics.ListCreateAPIView):
     serializer_class = MenuItemSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    pagination_class = MenuItemPagination
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ["category", "is_available"]
+    search_fields = ["name"]
+    ordering_fields = ["price"]
+    ordering = ["category__name", "name"]
     http_method_names = ["get", "post", "head", "options"]
 
     def get_queryset(self):
-        return MenuItem.objects.select_related("category").all()
+        return MenuItem.objects.select_related("category", "created_by").all()
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)
 
 
 class MenuItemDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = MenuItemSerializer
+    permission_classes = [
+        permissions.IsAuthenticatedOrReadOnly,
+        IsMenuItemCreatorOrReadOnly,
+    ]
     http_method_names = ["get", "put", "delete", "head", "options"]
 
     def get_queryset(self):
-        return MenuItem.objects.select_related("category").all()
+        return MenuItem.objects.select_related("category", "created_by").all()
 
 
 class MenuCategoryListAPIView(generics.ListAPIView):
@@ -186,7 +203,9 @@ def menu_item_create(request):
     if request.method == "POST":
         form = MenuItemForm(request.POST, request.FILES)
         if form.is_valid():
-            menu_item = form.save()
+            menu_item = form.save(commit=False)
+            menu_item.created_by = request.user
+            menu_item.save()
             messages.success(request, f"{menu_item.name} was created successfully.")
             return redirect("menu_item_detail", pk=menu_item.pk)
     else:

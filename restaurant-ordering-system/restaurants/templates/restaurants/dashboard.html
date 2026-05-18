@@ -3,162 +3,164 @@
 {% block title %}Dashboard | HappyMeal{% endblock %}
 
 {% block content %}
-<section class="dashboard-header">
-    <div>
-        <p class="section-kicker mb-2">Staff dashboard</p>
-        <h1 class="display-6 fw-bold mb-2">Welcome, {{ request.user.username }}</h1>
-        <p class="dashboard-lede mb-0">You are signed in as {{ role_label }}.</p>
-    </div>
-    <div class="dashboard-role-card">
-        <span class="section-kicker">Current role</span>
-        <strong>{{ role_label }}</strong>
-    </div>
-</section>
+<div class="dashboard-page" data-skeleton-page="dashboard">
+    <section class="dashboard-header">
+        <div>
+            <p class="section-kicker mb-2">Staff dashboard</p>
+            <h1 class="dashboard-title fw-bold mb-3">Welcome, {{ request.user.username }}</h1>
+            <p class="dashboard-lede mb-0">You are signed in as {{ role_label }}.</p>
+        </div>
+        <div class="dashboard-role-card">
+            <span class="section-kicker">Current role</span>
+            <strong>{{ role_label }}</strong>
+        </div>
+    </section>
 
-<section class="dashboard-grid" aria-label="Dashboard summary">
-    <article class="dashboard-stat-card">
-        <span class="section-kicker">Menu items</span>
-        <strong>{{ total_menu_items }}</strong>
-        <span>{{ available_menu_items }} available</span>
-    </article>
+    <section class="dashboard-grid" aria-label="Dashboard summary">
+        <article class="dashboard-stat-card">
+            <span class="section-kicker">Menu items</span>
+            <strong>{{ total_menu_items }}</strong>
+            <span>{{ available_menu_items }} available</span>
+        </article>
 
-    <article class="dashboard-stat-card">
-        <span class="section-kicker">Categories</span>
-        <strong>{{ total_categories }}</strong>
-        <span>Menu sections</span>
-    </article>
+        <article class="dashboard-stat-card">
+            <span class="section-kicker">Categories</span>
+            <strong>{{ total_categories }}</strong>
+            <span>Menu sections</span>
+        </article>
 
-    <article class="dashboard-stat-card">
-        <span class="section-kicker">Customers</span>
-        <strong>{{ customer_users }}</strong>
-        <span>Non-staff accounts</span>
-    </article>
+        <article class="dashboard-stat-card">
+            <span class="section-kicker">Customers</span>
+            <strong>{{ customer_users }}</strong>
+            <span>Non-staff accounts</span>
+        </article>
 
-    <article class="dashboard-stat-card">
-        <span class="section-kicker">Admins</span>
-        <strong>{{ admin_users }}</strong>
-        <span>{{ superusers }} superuser{{ superusers|pluralize }}</span>
-    </article>
+        <article class="dashboard-stat-card">
+            <span class="section-kicker">Admins</span>
+            <strong>{{ admin_users }}</strong>
+            <span>{{ superusers }} superuser{{ superusers|pluralize }}</span>
+        </article>
 
-    <article class="dashboard-stat-card">
-        <span class="section-kicker">Orders</span>
-        <strong>{{ total_orders }}</strong>
-        <span>{{ active_orders }} active</span>
-    </article>
+        <article class="dashboard-stat-card">
+            <span class="section-kicker">Orders</span>
+            <strong>{{ total_orders }}</strong>
+            <span>{{ active_orders }} active</span>
+        </article>
 
-    <article class="dashboard-stat-card">
-        <span class="section-kicker">Delivered</span>
-        <strong>{{ delivered_orders }}</strong>
-        <span>Completed orders</span>
-    </article>
-</section>
+        <article class="dashboard-stat-card">
+            <span class="section-kicker">Delivered</span>
+            <strong>{{ delivered_orders }}</strong>
+            <span>Completed orders</span>
+        </article>
+    </section>
 
-<div class="row g-4">
-    <div class="col-lg-8">
-        <section class="content-panel p-4 p-md-5 h-100">
-            <div class="d-flex flex-column flex-md-row justify-content-between gap-3 mb-4">
-                <div>
-                    <p class="section-kicker mb-2">Order queue</p>
-                    <h2 class="h4 mb-0">Recent orders</h2>
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <section class="content-panel dashboard-panel p-4 p-md-5 h-100">
+                <div class="d-flex flex-column flex-md-row justify-content-between gap-3 mb-4">
+                    <div>
+                        <p class="section-kicker mb-2">Order queue</p>
+                        <h2 class="h4 mb-0">Recent orders</h2>
+                    </div>
+                    <a class="btn btn-outline-secondary align-self-md-start" href="{% url 'order_history' %}">My Orders</a>
                 </div>
-                <a class="btn btn-outline-secondary align-self-md-start" href="{% url 'order_history' %}">My Orders</a>
-            </div>
 
-            {% if recent_orders %}
-                <div class="table-responsive">
-                    <table class="table align-middle mb-0">
-                        <thead>
-                            <tr>
-                                <th scope="col">Order</th>
-                                <th scope="col">Customer</th>
-                                <th scope="col">Total</th>
-                                <th scope="col">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for order in recent_orders %}
+                {% if recent_orders %}
+                    <div class="table-responsive">
+                        <table class="table align-middle mb-0">
+                            <thead>
                                 <tr>
-                                    <td>
-                                        <a class="fw-semibold" href="{% url 'order_detail' order.pk %}">#{{ order.pk }}</a>
-                                        <span class="text-muted d-block small">{{ order.created_at|date:"M j, g:i A" }}</span>
-                                    </td>
-                                    <td>{{ order.customer.full_name }}</td>
-                                    <td class="fw-semibold">NGN {{ order.total_price }}</td>
-                                    <td>
-                                        <form class="d-flex gap-2" method="post" action="{% url 'order_status_update' order.pk %}">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="next" value="{% url 'dashboard' %}">
-                                            <select class="form-select form-select-sm" name="status" aria-label="Order #{{ order.pk }} status">
-                                                {% for value, label in order_status_choices %}
-                                                    <option value="{{ value }}" {% if order.status == value %}selected{% endif %}>{{ label }}</option>
-                                                {% endfor %}
-                                            </select>
-                                            <button class="btn btn-sm btn-outline-secondary" type="submit">Save</button>
-                                        </form>
-                                    </td>
+                                    <th scope="col">Order</th>
+                                    <th scope="col">Customer</th>
+                                    <th scope="col">Total</th>
+                                    <th scope="col">Status</th>
                                 </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            {% else %}
-                <div class="alert alert-info mb-0">No customer orders have been placed yet.</div>
-            {% endif %}
-        </section>
-    </div>
+                            </thead>
+                            <tbody>
+                                {% for order in recent_orders %}
+                                    <tr>
+                                        <td>
+                                            <a class="fw-semibold" href="{% url 'order_detail' order.pk %}">#{{ order.pk }}</a>
+                                            <span class="text-muted d-block small">{{ order.created_at|date:"M j, g:i A" }}</span>
+                                        </td>
+                                        <td>{{ order.customer.full_name }}</td>
+                                        <td class="fw-semibold">NGN {{ order.total_price }}</td>
+                                        <td>
+                                            <form class="d-flex gap-2" method="post" action="{% url 'order_status_update' order.pk %}">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="next" value="{% url 'dashboard' %}">
+                                                <select class="form-select form-select-sm" name="status" aria-label="Order #{{ order.pk }} status">
+                                                    {% for value, label in order_status_choices %}
+                                                        <option value="{{ value }}" {% if order.status == value %}selected{% endif %}>{{ label }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                                <button class="btn btn-sm btn-outline-secondary" type="submit">Save</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info mb-0">No customer orders have been placed yet.</div>
+                {% endif %}
+            </section>
+        </div>
 
-    <div class="col-lg-4">
-        <section class="content-panel p-4 p-md-5 h-100">
-            <div class="d-flex flex-column flex-md-row justify-content-between gap-3 mb-4">
-                <div>
-                    <p class="section-kicker mb-2">Recent menu</p>
-                    <h2 class="h4 mb-0">Recently added items</h2>
+        <div class="col-lg-4">
+            <section class="content-panel dashboard-panel p-4 p-md-5 h-100">
+                <div class="d-flex flex-column flex-md-row justify-content-between gap-3 mb-4">
+                    <div>
+                        <p class="section-kicker mb-2">Recent menu</p>
+                        <h2 class="h4 mb-0">Recently added items</h2>
+                    </div>
+                    <a class="btn btn-primary align-self-md-start" href="{% url 'menu_item_add' %}">Add</a>
                 </div>
-                <a class="btn btn-primary align-self-md-start" href="{% url 'menu_item_add' %}">Add Menu Item</a>
-            </div>
 
-            {% if recent_menu_items %}
-                <div class="list-group list-group-flush">
-                    {% for item in recent_menu_items %}
-                        <a class="list-group-item list-group-item-action d-flex flex-column flex-md-row justify-content-between gap-2" href="{% url 'menu_item_detail' item.pk %}">
-                            <span>
-                                <strong>{{ item.name }}</strong>
-                                <span class="text-muted d-block">{{ item.category.name }}</span>
-                            </span>
-                            <span class="price-tag">NGN {{ item.price }}</span>
-                        </a>
-                    {% endfor %}
-                </div>
-            {% else %}
-                <div class="alert alert-info mb-0">No menu items have been added yet.</div>
-            {% endif %}
-        </section>
-    </div>
+                {% if recent_menu_items %}
+                    <div class="list-group list-group-flush">
+                        {% for item in recent_menu_items %}
+                            <a class="list-group-item list-group-item-action d-flex flex-column flex-md-row justify-content-between gap-2" href="{% url 'menu_item_detail' item.pk %}">
+                                <span>
+                                    <strong>{{ item.name }}</strong>
+                                    <span class="text-muted d-block">{{ item.category.name }}</span>
+                                </span>
+                                <span class="price-tag">NGN {{ item.price }}</span>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="alert alert-info mb-0">No menu items have been added yet.</div>
+                {% endif %}
+            </section>
+        </div>
 
-    <div class="col-lg-5">
-        <section class="content-panel p-4 p-md-5 h-100">
-            <p class="section-kicker mb-2">Access overview</p>
-            <h2 class="h4 mb-4">Account roles</h2>
+        <div class="col-lg-5">
+            <section class="content-panel dashboard-panel p-4 p-md-5 h-100">
+                <p class="section-kicker mb-2">Access overview</p>
+                <h2 class="h4 mb-4">Account roles</h2>
 
-            <div class="dashboard-role-list">
-                <div>
-                    <span>Customers</span>
-                    <strong>{{ customer_users }}</strong>
+                <div class="dashboard-role-list">
+                    <div>
+                        <span>Customers</span>
+                        <strong>{{ customer_users }}</strong>
+                    </div>
+                    <div>
+                        <span>Staff/Admins</span>
+                        <strong>{{ admin_users }}</strong>
+                    </div>
+                    <div>
+                        <span>Superusers</span>
+                        <strong>{{ superusers }}</strong>
+                    </div>
+                    <div>
+                        <span>Out of stock items</span>
+                        <strong>{{ out_of_stock_items }}</strong>
+                    </div>
                 </div>
-                <div>
-                    <span>Staff/Admins</span>
-                    <strong>{{ admin_users }}</strong>
-                </div>
-                <div>
-                    <span>Superusers</span>
-                    <strong>{{ superusers }}</strong>
-                </div>
-                <div>
-                    <span>Out of stock items</span>
-                    <strong>{{ out_of_stock_items }}</strong>
-                </div>
-            </div>
-        </section>
+            </section>
+        </div>
     </div>
 </div>
 {% endblock %}

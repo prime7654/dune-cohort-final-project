@@ -2,56 +2,7 @@
 
 HappyMeal is a Django restaurant ordering system for browsing meals, managing menu content, placing customer orders, and tracking order status from a staff dashboard.
 
-The project includes a public restaurant website, customer authentication, protected cart and checkout flows, menu/category management, customer order history, and staff-only administrative tools.
-
-## Work Completed On May 17, 2026
-
-The project was extended with a Django REST Framework API, Postman testing support, and restaurant-focused visual styling.
-
-### API Work
-
-- Added `rest_framework` to `INSTALLED_APPS`.
-- Added `restaurants/serializers.py`.
-- Added `MenuItemSerializer` with all menu item fields and nested `menu_category` data.
-- Added `MenuCategorySerializer` with `menu_item_count` using `SerializerMethodField`.
-- Added menu item API views inside `restaurants/views.py`.
-- Added API routes inside `restaurants/urls.py`.
-- Kept API naming aligned with the existing models: `MenuItem` and `MenuCategory`.
-
-### API Endpoints Added
-
-| Method | URL | Purpose |
-| --- | --- | --- |
-| `GET` | `/api/menu-items/` | List all menu items |
-| `POST` | `/api/menu-items/` | Create a menu item |
-| `GET` | `/api/menu-items/<id>/` | Retrieve one menu item |
-| `PUT` | `/api/menu-items/<id>/` | Fully update one menu item |
-| `DELETE` | `/api/menu-items/<id>/` | Delete one menu item |
-| `GET` | `/api/menu-categories/` | List menu categories with menu item counts and nested menu items |
-
-### API Testing Support
-
-- Added `restaurants/test_api.py` with API tests for list, create, retrieve, update, delete, and category listing.
-- Added `HappyMeal_API.postman_collection.json` for Postman endpoint testing.
-- Confirmed the API endpoints work in Postman.
-
-### Styling Work
-
-- Updated the global website background from plain white to a dark restaurant-style background.
-- Styled menu and category intro banners with a dark smoky gold image overlay.
-- Styled the About page story panel and FAQ section with warm brown/gold cards.
-- Updated button and text contrast so dark sections stay readable.
-- Added a stylesheet cache version in `base.html` so browser styling updates load correctly.
-
-### Verification
-
-The following checks were run successfully:
-
-```powershell
-python manage.py check
-python manage.py test restaurants.test_api
-python manage.py test
-```
+The project includes a public restaurant website, customer authentication, protected cart and checkout flows, menu/category management, customer order history, staff-only administrative tools, and a Django REST Framework API.
 
 ## Features
 
@@ -74,14 +25,18 @@ python manage.py test
 - Staff-only menu item and category create, edit, and delete views.
 - Django admin support for menu items, categories, customers, orders, and order items.
 
-### Menu And Cart Features
+### API Features
 
-- Menu item CRUD with image upload.
-- Category CRUD with item counts.
-- Stock-aware cart.
-- Out-of-stock items cannot be added to cart.
-- Cart quantities are capped by available stock.
-- Checkout reduces menu item stock after an order is placed.
+- JWT authentication at `/api/token/` and `/api/token/refresh/`.
+- Single-token authentication at `/api/auth-token/`.
+- Authenticated-only menu item create, update, and delete.
+- Creator-only menu item update and delete.
+- Paginated menu item listing with 6 items per page.
+- Filtering by category and availability.
+- Search by menu item name.
+- Ordering by price.
+- CORS headers enabled for development/testing.
+- API details documented in `api_docs.md`.
 
 ## User Roles
 
@@ -98,6 +53,10 @@ python manage.py test
 - Django
 - SQLite
 - Django REST Framework
+- DRF token authentication
+- Simple JWT
+- django-filter
+- django-cors-headers
 - Django Templates
 - Bootstrap
 - Pillow
@@ -113,9 +72,13 @@ restaurant-ordering-system/
 |   `-- wsgi.py
 |-- restaurants/
 |   |-- admin.py
+|   |-- auth_rate_limit.py
+|   |-- auth_views.py
 |   |-- context_processors.py
 |   |-- forms.py
 |   |-- models.py
+|   |-- pagination.py
+|   |-- permissions.py
 |   |-- serializers.py
 |   |-- test_api.py
 |   |-- tests.py
@@ -123,48 +86,15 @@ restaurant-ordering-system/
 |   |-- views.py
 |   |-- migrations/
 |   |-- static/
-|   |   `-- restaurants/css/style.css
 |   `-- templates/
-|       |-- base.html
-|       |-- registration/
-|       `-- restaurants/
 |-- orders/
-|   |-- admin.py
-|   |-- forms.py
-|   |-- models.py
-|   |-- tests.py
-|   |-- urls.py
-|   |-- views.py
-|   |-- migrations/
-|   `-- templates/orders/
 |-- media/
-|   `-- menu_items/
+|-- api_docs.md
 |-- HappyMeal_API.postman_collection.json
 |-- db.sqlite3
 |-- manage.py
 `-- README.md
 ```
-
-## Main Apps
-
-### `restaurants`
-
-Handles the public website, menu items, categories, cart session behavior, registration, dashboard, and shared templates.
-
-Main models:
-
-- `MenuCategory`
-- `MenuItem`
-
-### `orders`
-
-Handles checkout, customer profiles, order records, order items, order history, and staff order status updates.
-
-Main models:
-
-- `Customer`
-- `Order`
-- `OrderItem`
 
 ## Important Routes
 
@@ -189,6 +119,17 @@ Main models:
 | `/accounts/password-reset/` | Password reset request |
 | `/accounts/reset/<uidb64>/<token>/` | Password reset confirmation |
 
+### API
+
+| URL | Purpose |
+| --- | --- |
+| `/api/auth-token/` | Get a single API auth token |
+| `/api/token/` | Get JWT access and refresh tokens |
+| `/api/token/refresh/` | Refresh a JWT access token |
+| `/api/menu-items/` | List paginated menu items with filtering, search, ordering, or create a menu item |
+| `/api/menu-items/<id>/` | Retrieve, fully update, or delete one creator-owned menu item |
+| `/api/menu-categories/` | List menu categories with `menu_item_count` and nested menu items |
+
 ### Cart And Orders
 
 | URL | Purpose |
@@ -200,20 +141,6 @@ Main models:
 | `/checkout/` | Place an order, login required |
 | `/orders/` | Customer order history |
 | `/orders/<id>/` | Order detail |
-
-### API
-
-| URL | Purpose |
-| --- | --- |
-| `/api/menu-items/` | List menu items with nested menu category data, or create a menu item |
-| `/api/menu-items/<id>/` | Retrieve, fully update, or delete one menu item |
-| `/api/menu-categories/` | List menu categories with `menu_item_count` and nested menu items |
-
-Postman collection:
-
-```text
-HappyMeal_API.postman_collection.json
-```
 
 ### Staff/Admin
 
@@ -254,7 +181,7 @@ py -m venv venv
 ### 3. Install dependencies
 
 ```powershell
-pip install django djangorestframework Pillow
+pip install django djangorestframework djangorestframework-simplejwt django-filter django-cors-headers Pillow
 ```
 
 ### 4. Apply migrations
@@ -311,6 +238,7 @@ python manage.py migrate
 
 - Guests can browse, but cannot add to cart or checkout.
 - Customers must login before ordering.
+- Login and token endpoints pause further attempts for 5 minutes after 5 failed password attempts.
 - Customers can only view their own orders.
 - Staff users can manage menu/category content.
 - Staff users can view the dashboard and update order statuses.
@@ -323,7 +251,8 @@ python manage.py migrate
 The project includes tests for:
 
 - Public page rendering
-- Authentication and registration
+- Authentication, registration, and sign-in cooldown
+- Single-token and JWT API authentication
 - Password reset email flow
 - Staff dashboard access
 - Menu item CRUD
@@ -345,6 +274,6 @@ python manage.py test
 - During development, media files are served through Django when `DEBUG = True`.
 - Password reset emails print to the console by default because the project uses Django's console email backend.
 - Before deployment, move `SECRET_KEY` to an environment variable, set `DEBUG = False`, and configure `ALLOWED_HOSTS`.
-
+ 
 ## CONCLUSION
-This project demonstrates a full-stack Django restaurant ordering system with a public website, customer authentication, cart and checkout flows, staff dashboard, and a REST API. The code is organized into two main apps (`restaurants` and `orders`) with clear separation of concerns. The project includes comprehensive features for customers and staff, as well as testing support to ensure functionality. The API allows for future expansion, such as mobile app integration or third-party services. The styling provides a warm restaurant atmosphere, and the project structure allows for easy maintenance and scalability.
+This project demonstrates a full-stack Django restaurant ordering system with public browsing, customer authentication, cart and checkout flows, staff dashboard, and a REST API. It includes security measures, permissions, and comprehensive testing to ensure a robust application.

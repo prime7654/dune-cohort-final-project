@@ -1,12 +1,21 @@
 from rest_framework import serializers
+from django.contrib.auth import get_user_model
 
 from .models import MenuCategory, MenuItem
+
+User = get_user_model()
 
 
 class MenuCategoryBriefSerializer(serializers.ModelSerializer):
     class Meta:
         model = MenuCategory
         fields = ["id", "name", "description"]
+
+
+class MenuItemCreatorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "username"]
 
 
 class MenuItemSerializer(serializers.ModelSerializer):
@@ -16,6 +25,7 @@ class MenuItemSerializer(serializers.ModelSerializer):
         source="category",
         write_only=True,
     )
+    created_by = MenuItemCreatorSerializer(read_only=True)
 
     class Meta:
         model = MenuItem
@@ -23,6 +33,7 @@ class MenuItemSerializer(serializers.ModelSerializer):
             "id",
             "menu_category",
             "menu_category_id",
+            "created_by",
             "name",
             "description",
             "price",
@@ -31,7 +42,7 @@ class MenuItemSerializer(serializers.ModelSerializer):
             "image",
             "created_at",
         ]
-        read_only_fields = ["id", "menu_category", "created_at"]
+        read_only_fields = ["id", "menu_category", "created_by", "created_at"]
 
 
 class MenuCategorySerializer(serializers.ModelSerializer):

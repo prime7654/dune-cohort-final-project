@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 
 
@@ -18,6 +19,13 @@ class MenuItem(models.Model):
         MenuCategory,
         on_delete=models.CASCADE,
         related_name="menu_items",
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        related_name="created_menu_items",
+        blank=True,
+        null=True,
     )
     name = models.CharField(max_length=150)
     description = models.TextField(blank=True)

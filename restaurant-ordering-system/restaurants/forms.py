@@ -4,8 +4,15 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 from django.utils.text import slugify
 
+from .auth_rate_limit import (
+    AUTH_LOCKOUT_MESSAGE,
+    clear_auth_failures,
+    is_auth_locked,
+    record_auth_failure,
+)
 from .models import MenuCategory, MenuItem
 
 User = get_user_model()
@@ -187,10 +194,24 @@ class EmailOrUsernameAuthenticationForm(AuthenticationForm):
 
     def clean(self):
         username = self.cleaned_data.get("username")
+        rate_limit_username = username
 
         if username and "@" in username:
             matching_user = User.objects.filter(email__iexact=username).first()
             if matching_user:
                 self.cleaned_data["username"] = matching_user.get_username()
+                rate_limit_username = matching_user.get_username()
 
-        return super().clean()
+        if is_auth_locked(self.request, rate_limit_username):
+            raise ValidationError(AUTH_LOCKOUT_MESSAGE, code="auth_locked")
+
+        try:
+            cleaned_data = super().clean()
+        except ValidationError:
+            locked = record_auth_failure(self.request, rate_limit_username)
+            if locked:
+                raise ValidationError(AUTH_LOCKOUT_MESSAGE, code="auth_locked")
+            raise
+
+        clear_auth_failures(self.request, rate_limit_username)
+        return cleaned_data

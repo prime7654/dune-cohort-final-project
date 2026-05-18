@@ -26,12 +26,17 @@ from django.contrib.auth.views import (
     PasswordResetView,
 )
 from django.urls import include, path
+from restaurants.auth_views import RateLimitedAuthTokenView, RateLimitedTokenObtainPairView
 from restaurants.forms import EmailOrUsernameAuthenticationForm
 from restaurants import views as restaurant_views
+from rest_framework_simplejwt.views import TokenRefreshView
 
 urlpatterns = [
     path('', include('restaurants.urls')),
     path('', include('orders.urls')),
+    path('api/auth-token/', RateLimitedAuthTokenView.as_view(), name='api_auth_token'),
+    path('api/token/', RateLimitedTokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path(
         'accounts/login/',
         LoginView.as_view(

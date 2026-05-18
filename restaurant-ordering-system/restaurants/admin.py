@@ -11,9 +11,9 @@ class MenuCategoryAdmin(admin.ModelAdmin):
 
 @admin.register(MenuItem)
 class MenuItemAdmin(admin.ModelAdmin):
-    list_display = ("name", "price", "category", "stock", "is_available")
-    list_filter = ("category", "is_available")
-    search_fields = ("name", "category__name")
+    list_display = ("name", "price", "category", "stock", "is_available", "created_by")
+    list_filter = ("category", "is_available", "created_by")
+    search_fields = ("name", "category__name", "created_by__username")
     actions = ("mark_as_out_of_stock",)
 
     @admin.action(description="Mark as out of stock")
