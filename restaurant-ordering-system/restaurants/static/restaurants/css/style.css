@@ -716,6 +716,264 @@
     font-size: 1.25rem;
 }
 
+.menu-item-form-page {
+    color: #fffaf0;
+}
+
+.menu-item-form-page .page-header {
+    border-bottom-color: rgba(217, 155, 43, 0.2);
+}
+
+.menu-item-form-page .section-kicker {
+    color: #f07872;
+    letter-spacing: 0.18em;
+}
+
+.menu-item-form-page h1 {
+    color: #fffdf8;
+    font-size: clamp(2.4rem, 5vw, 4.2rem);
+    line-height: 1.02;
+}
+
+.menu-item-form-page .text-muted {
+    color: rgba(255, 250, 240, 0.7) !important;
+    font-size: 1.12rem;
+}
+
+.menu-item-form-page .page-header .btn-outline-secondary,
+.menu-item-form-page .menu-item-form-actions .btn-outline-secondary {
+    border-color: rgba(217, 155, 43, 0.58);
+    color: #fffaf0;
+}
+
+.menu-item-form-page .page-header .btn-outline-secondary:hover,
+.menu-item-form-page .page-header .btn-outline-secondary:focus,
+.menu-item-form-page .menu-item-form-actions .btn-outline-secondary:hover,
+.menu-item-form-page .menu-item-form-actions .btn-outline-secondary:focus {
+    background: rgba(217, 155, 43, 0.16);
+    border-color: rgba(217, 155, 43, 0.86);
+    color: #ffffff;
+}
+
+.menu-item-form-panel {
+    color-scheme: dark;
+    background:
+        linear-gradient(135deg, rgba(48, 34, 4, 0.9), rgba(35, 24, 2, 0.96)),
+        radial-gradient(circle at 18% 8%, rgba(217, 155, 43, 0.13), transparent 28rem);
+    border: 1px solid rgba(217, 155, 43, 0.28);
+    border-radius: 26px;
+    box-shadow: none;
+    color: #fffaf0;
+}
+
+.menu-item-form-page .form-label,
+.menu-item-form-page .form-check-label {
+    color: #fffdf8;
+    font-size: 1.02rem;
+}
+
+.menu-item-form-page .form-control {
+    min-height: 3.55rem;
+    background-color: rgba(11, 20, 17, 0.92);
+    border: 1px solid rgba(217, 155, 43, 0.24);
+    border-radius: 8px;
+    color: #fffdf8;
+    font-size: 1.05rem;
+    transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+}
+
+.menu-item-form-page textarea.form-control {
+    min-height: 9.5rem;
+    resize: vertical;
+}
+
+.menu-item-form-page .form-control:focus {
+    background-color: rgba(13, 20, 17, 0.98);
+    border-color: rgba(217, 155, 43, 0.74);
+    box-shadow: 0 0 0 0.22rem rgba(217, 155, 43, 0.14);
+    color: #ffffff;
+}
+
+.menu-item-form-page .form-control::placeholder {
+    color: rgba(255, 250, 240, 0.44);
+}
+
+.menu-item-form-page select.form-control option {
+    background: #151411;
+    color: #fffdf8;
+}
+
+.menu-item-form-page input[type="file"].form-control {
+    min-height: 3.55rem;
+    padding: 0;
+    color: rgba(255, 250, 240, 0.74);
+}
+
+.menu-item-form-page input[type="file"].form-control::file-selector-button {
+    min-height: 3.45rem;
+    margin-right: 1rem;
+    padding: 0 1.15rem;
+    background: rgba(255, 250, 240, 0.08);
+    border: 0;
+    border-right: 1px solid rgba(217, 155, 43, 0.24);
+    color: #fffdf8;
+    font-weight: 700;
+}
+
+.menu-item-form-page input[type="file"].form-control:hover::file-selector-button {
+    background: rgba(217, 155, 43, 0.18);
+}
+
+.menu-item-form-page a:not(.btn) {
+    color: #72b7ff;
+    text-decoration-color: rgba(114, 183, 255, 0.45);
+    text-underline-offset: 0.2rem;
+}
+
+.menu-item-form-page a:not(.btn):hover,
+.menu-item-form-page a:not(.btn):focus {
+    color: #b9dcff;
+}
+
+.menu-item-form-page .form-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    min-height: 3.2rem;
+    padding: 0.65rem 1rem;
+    background: rgba(255, 250, 240, 0.06);
+    border: 1px solid rgba(217, 155, 43, 0.18);
+    border-radius: 999px;
+}
+
+.menu-item-form-page .form-check-input {
+    width: 1.15rem;
+    height: 1.15rem;
+    margin: 0;
+    background-color: rgba(11, 20, 17, 0.92);
+    border-color: rgba(217, 155, 43, 0.48);
+}
+
+.menu-item-form-page .form-check-input:checked {
+    background-color: #bd861f;
+    border-color: #d99b2b;
+}
+
+.menu-item-form-page input[type="checkbox"] {
+    accent-color: #d99b2b;
+}
+
+.menu-item-form-page .form-check-input:focus {
+    border-color: #d99b2b;
+    box-shadow: 0 0 0 0.22rem rgba(217, 155, 43, 0.14);
+}
+
+.menu-item-form-page .invalid-feedback,
+.menu-item-form-page .errorlist {
+    color: #ffaaa5;
+    font-weight: 700;
+}
+
+.menu-item-form-page .alert-danger {
+    background: rgba(157, 47, 40, 0.18);
+    border-color: rgba(240, 120, 114, 0.4);
+    color: #ffd6d3;
+}
+
+.menu-item-form-page .btn-primary {
+    background: #a8322b;
+    border-color: #bd463e;
+    color: #fffdf8;
+}
+
+.menu-item-form-page .btn-primary:hover,
+.menu-item-form-page .btn-primary:focus {
+    background: #c34238;
+    border-color: #d45a50;
+    color: #ffffff;
+}
+
+.menu-item-form-actions {
+    align-items: center;
+    padding-top: 0.55rem;
+}
+
+.menu-item-form-actions .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.content-panel:has(form[enctype="multipart/form-data"]) {
+    color-scheme: dark;
+    background:
+        linear-gradient(135deg, rgba(48, 34, 4, 0.9), rgba(35, 24, 2, 0.96)),
+        radial-gradient(circle at 18% 8%, rgba(217, 155, 43, 0.13), transparent 28rem);
+    border-color: rgba(217, 155, 43, 0.28);
+    box-shadow: none;
+    color: #fffaf0;
+}
+
+.content-panel:has(form[enctype="multipart/form-data"]) .form-label,
+.content-panel:has(form[enctype="multipart/form-data"]) .form-check-label {
+    color: #fffdf8;
+}
+
+.content-panel:has(form[enctype="multipart/form-data"]) .form-control {
+    background-color: rgba(11, 20, 17, 0.92);
+    border-color: rgba(217, 155, 43, 0.24);
+    color: #fffdf8;
+}
+
+.content-panel:has(form[enctype="multipart/form-data"]) .form-control:focus {
+    background-color: rgba(13, 20, 17, 0.98);
+    border-color: rgba(217, 155, 43, 0.74);
+    box-shadow: 0 0 0 0.22rem rgba(217, 155, 43, 0.14);
+    color: #ffffff;
+}
+
+.content-panel:has(form[enctype="multipart/form-data"]) input[type="file"].form-control::file-selector-button {
+    background: rgba(255, 250, 240, 0.08);
+    border-right-color: rgba(217, 155, 43, 0.24);
+    color: #fffdf8;
+}
+
+.content-panel:has(form[enctype="multipart/form-data"]) a:not(.btn) {
+    color: #72b7ff;
+    text-decoration-color: rgba(114, 183, 255, 0.45);
+    text-underline-offset: 0.2rem;
+}
+
+.content-panel:has(form[enctype="multipart/form-data"]) .form-check {
+    background: rgba(255, 250, 240, 0.06);
+    border-color: rgba(217, 155, 43, 0.18);
+}
+
+.content-panel:has(form[enctype="multipart/form-data"]) .btn-primary {
+    background: #a8322b;
+    border-color: #bd463e;
+    color: #fffdf8;
+}
+
+.content-panel:has(form[enctype="multipart/form-data"]) .btn-primary:hover,
+.content-panel:has(form[enctype="multipart/form-data"]) .btn-primary:focus {
+    background: #c34238;
+    border-color: #d45a50;
+    color: #ffffff;
+}
+
+.content-panel:has(form[enctype="multipart/form-data"]) .btn-outline-secondary {
+    border-color: rgba(217, 155, 43, 0.58);
+    color: #fffaf0;
+}
+
+.content-panel:has(form[enctype="multipart/form-data"]) .btn-outline-secondary:hover,
+.content-panel:has(form[enctype="multipart/form-data"]) .btn-outline-secondary:focus {
+    background: rgba(217, 155, 43, 0.16);
+    border-color: rgba(217, 155, 43, 0.86);
+    color: #ffffff;
+}
+
 .about-faq {
     display: grid;
     grid-template-columns: minmax(180px, 0.35fr) minmax(0, 1fr);
@@ -1384,6 +1642,42 @@ body[data-route-skeleton="dashboard"] .route-skeleton-dashboard {
 
     .menu-item-page .order-panel {
         padding: 1.25rem;
+    }
+
+    .menu-item-form-page h1 {
+        font-size: clamp(2.25rem, 12vw, 3.1rem);
+    }
+
+    .menu-item-form-page .text-muted {
+        font-size: 1rem;
+    }
+
+    .menu-item-form-page .page-header .btn-outline-secondary {
+        width: 100%;
+    }
+
+    .menu-item-form-panel {
+        border-radius: 20px;
+        padding: 1.25rem !important;
+    }
+
+    .menu-item-form-page .form-control,
+    .menu-item-form-page input[type="file"].form-control {
+        min-height: 3.2rem;
+        font-size: 1rem;
+    }
+
+    .menu-item-form-page input[type="file"].form-control::file-selector-button {
+        min-height: 3.1rem;
+    }
+
+    .menu-item-form-page .form-check,
+    .menu-item-form-actions .btn {
+        width: 100%;
+    }
+
+    .menu-item-form-actions .btn {
+        justify-content: center;
     }
 
     .footer-main {

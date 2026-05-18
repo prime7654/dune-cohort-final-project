@@ -1,63 +1,58 @@
 # HappyMeal Restaurant Ordering System
 
-HappyMeal is a Django restaurant ordering system for browsing meals, managing menu content, placing customer orders, and tracking order status from a staff dashboard.
+HappyMeal is a Django restaurant ordering system built for customers to browse meals, add menu items to a cart, place orders, and track order history. Staff users can manage the menu, categories, uploaded images, stock, and order status from protected staff pages.
 
-The project includes a public restaurant website, customer authentication, protected cart and checkout flows, menu/category management, customer order history, staff-only administrative tools, and a Django REST Framework API.
+The project also includes a Django REST Framework API, token/JWT authentication, Postman-ready endpoints, deployment settings, and a dark restaurant-style UI.
 
-## Features
+## What Was Done
 
-### Customer Features
+- Built a restaurant website with home, menu, category, about, cart, checkout, order history, and order detail pages.
+- Added user registration, login, logout, password reset, and login-required ordering.
+- Added a 5-minute cooldown after 5 failed sign-in attempts for the website login and API token endpoints.
+- Added staff-only dashboard access for menu, category, and order management.
+- Added menu item image uploads, stock tracking, availability status, and category grouping.
+- Added creator tracking for API-created menu items with `created_by`.
+- Added creator-only API update/delete rules for menu items.
+- Added paginated API menu item results with 6 items per page.
+- Added API filtering by category and availability, search by name, and ordering by price.
+- Added separate single-token and JWT authentication endpoints.
+- Added CORS support for API testing.
+- Added `api_docs.md` with endpoint documentation.
+- Added `HappyMeal_API.postman_collection.json` for Postman testing.
+- Added `.env`-based configuration with `python-decouple`.
+- Added `dj-database-url` so SQLite works locally and PostgreSQL can be used for deployment.
+- Added WhiteNoise static-file support and `collectstatic`.
+- Added Waitress support for local Windows server testing.
+- Added a `Procfile` for Gunicorn deployment.
+- Added focused tests for website flows, API auth, menu item management, categories, cart, checkout, and orders.
+- Updated the visual style with dark smoky-brown panels, gold borders, warm text, and styled menu/edit pages.
 
-- Browse the restaurant menu and categories.
-- View menu item details, stock status, prices, and images.
-- Register, login, logout, and reset passwords.
-- Add items to cart only after logging in.
-- Checkout with delivery address, phone number, email, and notes.
-- View personal order history from `My Orders`.
-- View order details and order status.
+## Main Features
 
-### Staff/Admin Features
-
-- Staff-only dashboard at `/dashboard/`.
-- Dashboard separates customers, admins, and superusers.
-- Dashboard shows menu counts, active orders, delivered orders, and recent orders.
-- Staff can update order status directly from the dashboard.
-- Staff-only menu item and category create, edit, and delete views.
-- Django admin support for menu items, categories, customers, orders, and order items.
-
-### API Features
-
-- JWT authentication at `/api/token/` and `/api/token/refresh/`.
-- Single-token authentication at `/api/auth-token/`.
-- Authenticated-only menu item create, update, and delete.
-- Creator-only menu item update and delete.
-- Paginated menu item listing with 6 items per page.
-- Filtering by category and availability.
-- Search by menu item name.
-- Ordering by price.
-- CORS headers enabled for development/testing.
-- API details documented in `api_docs.md`.
-
-## User Roles
-
-| Role | Access |
+| Area | What It Does |
 | --- | --- |
-| Guest | Can browse public pages and menu. Cannot add to cart or place orders. |
-| Customer | Can add to cart, checkout, and view their own orders. |
-| Staff/Admin | Can manage menu/category content, view dashboard, and update orders. |
-| Superuser | Has staff access plus Django admin superuser permissions. |
+| Customers | Browse menu items, register, sign in, add to cart, checkout, and view orders. |
+| Staff | Manage menu items, categories, images, stock, availability, and order status. |
+| API | List, create, view, update, and delete menu items with auth rules. |
+| Security | CSRF-protected forms, staff-only pages, creator-only API edits, and sign-in cooldown. |
+| Deployment | Environment variables, database URL config, WhiteNoise, Waitress, Gunicorn, and requirements file. |
 
 ## Tech Stack
 
 - Python
 - Django
-- SQLite
 - Django REST Framework
-- DRF token authentication
+- SQLite for local development
+- PostgreSQL-ready database configuration
+- DRF Token Authentication
 - Simple JWT
 - django-filter
 - django-cors-headers
-- Django Templates
+- python-decouple
+- dj-database-url
+- WhiteNoise
+- Waitress
+- Gunicorn
 - Bootstrap
 - Pillow
 
@@ -71,10 +66,8 @@ restaurant-ordering-system/
 |   |-- asgi.py
 |   `-- wsgi.py
 |-- restaurants/
-|   |-- admin.py
 |   |-- auth_rate_limit.py
 |   |-- auth_views.py
-|   |-- context_processors.py
 |   |-- forms.py
 |   |-- models.py
 |   |-- pagination.py
@@ -84,119 +77,68 @@ restaurant-ordering-system/
 |   |-- tests.py
 |   |-- urls.py
 |   |-- views.py
-|   |-- migrations/
 |   |-- static/
 |   `-- templates/
 |-- orders/
 |-- media/
+|-- staticfiles/
 |-- api_docs.md
 |-- HappyMeal_API.postman_collection.json
-|-- db.sqlite3
+|-- Procfile
+|-- requirements.txt
 |-- manage.py
 `-- README.md
 ```
 
-## Important Routes
+## Environment Variables
 
-### Public Pages
+Create a `.env` file in the project root:
 
-| URL | Purpose |
-| --- | --- |
-| `/` | Home page |
-| `/about/` | About and FAQ page |
-| `/menu_list/` | Menu listing |
-| `/menu/<id>/` | Public menu item detail |
-| `/categories/` | Category listing |
-| `/categories/<id>/` | Category detail |
+```env
+SECRET_KEY=your-secret-key
+DEBUG=True
+ALLOWED_HOSTS=localhost,127.0.0.1
+DATABASE_URL=sqlite:///db.sqlite3
+```
 
-### Authentication
+For deployment, use a strong secret key, set `DEBUG=False`, set the real host in `ALLOWED_HOSTS`, and use a PostgreSQL `DATABASE_URL`.
 
-| URL | Purpose |
-| --- | --- |
-| `/accounts/register/` | Customer registration |
-| `/accounts/login/` | Login |
-| `/accounts/logout/` | Logout |
-| `/accounts/password-reset/` | Password reset request |
-| `/accounts/reset/<uidb64>/<token>/` | Password reset confirmation |
-
-### API
-
-| URL | Purpose |
-| --- | --- |
-| `/api/auth-token/` | Get a single API auth token |
-| `/api/token/` | Get JWT access and refresh tokens |
-| `/api/token/refresh/` | Refresh a JWT access token |
-| `/api/menu-items/` | List paginated menu items with filtering, search, ordering, or create a menu item |
-| `/api/menu-items/<id>/` | Retrieve, fully update, or delete one creator-owned menu item |
-| `/api/menu-categories/` | List menu categories with `menu_item_count` and nested menu items |
-
-### Cart And Orders
-
-| URL | Purpose |
-| --- | --- |
-| `/cart/` | Customer cart, login required |
-| `/cart/add/<id>/` | Add item to cart, login required |
-| `/cart/update/<id>/` | Update cart quantity, login required |
-| `/cart/remove/<id>/` | Remove item from cart, login required |
-| `/checkout/` | Place an order, login required |
-| `/orders/` | Customer order history |
-| `/orders/<id>/` | Order detail |
-
-### Staff/Admin
-
-| URL | Purpose |
-| --- | --- |
-| `/dashboard/` | Staff dashboard |
-| `/dashboard/orders/<id>/status/` | Update order status |
-| `/menu-items/add/` | Add menu item |
-| `/menu-items/<id>/edit/` | Edit menu item |
-| `/menu-items/<id>/delete/` | Delete menu item |
-| `/categories/add/` | Add category |
-| `/categories/<id>/edit/` | Edit category |
-| `/categories/<id>/delete/` | Delete category |
-| `/admin/` | Django admin |
+The `.env` file should stay private and is ignored by Git.
 
 ## Setup
 
-### 1. Open the project folder
+From the project folder:
 
 ```powershell
 cd C:\Users\ogbon\OneDrive\Desktop\dune-cohort-final-project\restaurant-ordering-system
 ```
 
-### 2. Create and activate a virtual environment
+Create and activate a virtual environment:
 
 ```powershell
 python -m venv venv
 .\venv\Scripts\activate
 ```
 
-If `python` is not available, try:
+Install dependencies:
 
 ```powershell
-py -m venv venv
-.\venv\Scripts\activate
+pip install -r requirements.txt
 ```
 
-### 3. Install dependencies
-
-```powershell
-pip install django djangorestframework djangorestframework-simplejwt django-filter django-cors-headers Pillow
-```
-
-### 4. Apply migrations
+Apply migrations:
 
 ```powershell
 python manage.py migrate
 ```
 
-### 5. Create a superuser
+Create a staff/admin account:
 
 ```powershell
 python manage.py createsuperuser
 ```
 
-### 6. Run the development server
+Run the local Django server:
 
 ```powershell
 python manage.py runserver
@@ -208,18 +150,167 @@ Open:
 http://127.0.0.1:8000/
 ```
 
-## Useful Commands
+## Testing With Waitress On Windows
 
-Run tests:
+Waitress can be used to test the deployed-style WSGI server locally:
 
 ```powershell
-python manage.py test
+python -m waitress --listen=127.0.0.1:8080 happymeal.wsgi:application
 ```
 
-Run Django system checks:
+Open:
+
+```text
+http://127.0.0.1:8080/
+```
+
+If `DEBUG=False`, run `collectstatic` before testing static files:
+
+```powershell
+python manage.py collectstatic --noinput
+```
+
+## Important Website Routes
+
+| URL | Purpose |
+| --- | --- |
+| `/` | Home page |
+| `/about/` | About page |
+| `/menu_list/` | Public menu listing |
+| `/menu/<id>/` | Public menu item detail |
+| `/categories/` | Category listing |
+| `/cart/` | Cart page |
+| `/checkout/` | Checkout page |
+| `/orders/` | Customer order history |
+| `/orders/<id>/` | Customer order detail |
+| `/dashboard/` | Staff dashboard |
+| `/menu-items/add/` | Add menu item |
+| `/menu-items/<id>/edit/` | Edit menu item |
+| `/menu-items/<id>/delete/` | Delete menu item |
+| `/admin/` | Django admin |
+
+## API Routes
+
+| Method | URL | Auth Required | Purpose |
+| --- | --- | --- | --- |
+| `POST` | `/api/auth-token/` | No | Get one DRF auth token. |
+| `POST` | `/api/token/` | No | Get JWT access and refresh tokens. |
+| `POST` | `/api/token/refresh/` | No | Refresh a JWT access token. |
+| `GET` | `/api/menu-items/` | No | List paginated menu items. |
+| `POST` | `/api/menu-items/` | Yes | Create a menu item. |
+| `GET` | `/api/menu-items/<id>/` | No | Retrieve one menu item. |
+| `PUT` | `/api/menu-items/<id>/` | Yes | Update a menu item created by the authenticated user. |
+| `DELETE` | `/api/menu-items/<id>/` | Yes | Delete a menu item created by the authenticated user. |
+| `GET` | `/api/menu-categories/` | No | List categories with nested menu items. |
+
+Full API request/response details are in:
+
+```text
+api_docs.md
+```
+
+## API Query Examples
+
+Filter by category:
+
+```text
+/api/menu-items/?category=1
+```
+
+Filter by availability:
+
+```text
+/api/menu-items/?is_available=true
+```
+
+Search by name:
+
+```text
+/api/menu-items/?search=rice
+```
+
+Order by price:
+
+```text
+/api/menu-items/?ordering=price
+```
+
+Order by highest price first:
+
+```text
+/api/menu-items/?ordering=-price
+```
+
+## Postman Auth Notes
+
+Single-token auth:
+
+```text
+POST /api/auth-token/
+```
+
+Body:
+
+```json
+{
+  "username": "your-username",
+  "password": "your-password"
+}
+```
+
+Use the returned token in Postman:
+
+```text
+Authorization: Token your-token
+```
+
+JWT auth:
+
+```text
+POST /api/token/
+```
+
+Body:
+
+```json
+{
+  "username": "your-username",
+  "password": "your-password"
+}
+```
+
+Use the returned access token:
+
+```text
+Authorization: Bearer your-access-token
+```
+
+To refresh JWT access:
+
+```text
+POST /api/token/refresh/
+```
+
+Body:
+
+```json
+{
+  "refresh": "your-refresh-token"
+}
+```
+
+## Useful Commands
+
+Run system checks:
 
 ```powershell
 python manage.py check
+```
+
+Run all tests:
+
+```powershell
+python manage.py test
 ```
 
 Create migrations:
@@ -234,46 +325,55 @@ Apply migrations:
 python manage.py migrate
 ```
 
-## Security And Permissions
-
-- Guests can browse, but cannot add to cart or checkout.
-- Customers must login before ordering.
-- Login and token endpoints pause further attempts for 5 minutes after 5 failed password attempts.
-- Customers can only view their own orders.
-- Staff users can manage menu/category content.
-- Staff users can view the dashboard and update order statuses.
-- Delete actions use confirmation pages and require `POST`.
-- Forms include CSRF protection.
-- Password reset uses Django's email reset flow with console email backend in development.
-
-## Testing
-
-The project includes tests for:
-
-- Public page rendering
-- Authentication, registration, and sign-in cooldown
-- Single-token and JWT API authentication
-- Password reset email flow
-- Staff dashboard access
-- Menu item CRUD
-- Category CRUD
-- Cart login protection and stock behavior
-- Checkout and order creation
-- Customer order history
-- Staff order status updates
-
-Current verified test command:
+Collect static files:
 
 ```powershell
-python manage.py test
+python manage.py collectstatic --noinput
 ```
 
-## Notes
+Update dependency list:
 
-- Uploaded menu item images are stored in `media/menu_items/`.
-- During development, media files are served through Django when `DEBUG = True`.
-- Password reset emails print to the console by default because the project uses Django's console email backend.
-- Before deployment, move `SECRET_KEY` to an environment variable, set `DEBUG = False`, and configure `ALLOWED_HOSTS`.
- 
+```powershell
+pip freeze > requirements.txt
+```
+
+## Deployment Notes
+
+The project includes:
+
+- `Procfile` with the Gunicorn start command.
+- `requirements.txt` with installed packages.
+- WhiteNoise static-file serving.
+- `STATIC_ROOT = staticfiles`.
+- `DATABASE_URL` support through `dj-database-url`.
+
+Before deploying:
+
+- Set `DEBUG=False`.
+- Set a strong `SECRET_KEY`.
+- Set the real deployment domain in `ALLOWED_HOSTS`.
+- Use a PostgreSQL `DATABASE_URL`.
+- Run migrations.
+- Run `collectstatic`.
+- Restrict CORS for the deployed domain when ready.
+- Configure real media-file hosting for uploaded menu item images.
+
+## Verification Completed
+
+The project has been checked with:
+
+```powershell
+python manage.py check
+python manage.py test
+python manage.py collectstatic --noinput
+python -m waitress --listen=127.0.0.1:8080 happymeal.wsgi:application
+```
+
+Recent focused verification also confirmed the menu item add/edit flow still passes tests after styling changes.
+
+## Final Summary
+
+HappyMeal is now a full restaurant ordering system with customer ordering, staff management, image-backed menu items, secure authentication flows, API access, Postman documentation, deployment-ready settings, and a styled dark restaurant interface.
+
 ## CONCLUSION
-This project demonstrates a full-stack Django restaurant ordering system with public browsing, customer authentication, cart and checkout flows, staff dashboard, and a REST API. It includes security measures, permissions, and comprehensive testing to ensure a robust application.
+This project demonstrates a comprehensive Django application with both website and API components, secure authentication, media handling, and deployment considerations. The added features and improvements provide a robust foundation for a real-world restaurant ordering system.

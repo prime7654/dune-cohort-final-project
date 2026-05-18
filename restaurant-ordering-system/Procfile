@@ -1,0 +1,1 @@
+web: gunicorn happymeal.wsgi:application --log-file -
